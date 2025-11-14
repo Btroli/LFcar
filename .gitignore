@@ -1,0 +1,5 @@
+Keil/Objects/*
+Keil/Listings/*
+*.uvguix.*
+*.uvoptx
+todo.txt
