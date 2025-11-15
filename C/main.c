@@ -9,48 +9,47 @@
 
 /********************************************/
 
-#define LEFT	0b11100000;
-#define MID 	0b00011000;
-#define RIGHT	0b00000111;
-
-#define SPDA 3870
-#define SPDB 3600
+//#define LEFT	0b11100000;
+//#define MID 	0b00011000;
+//#define RIGHT	0b00000111;
+//
+//#define SPDA 3870
+//#define SPDB 3600
 
 #define value_len 10
 
-int speedA = SPDA, speedB = SPDB;
-int speedA0 = SPDA, speedB0 = SPDB;
-
-int Encoder_A, Encoder_B;
+//int speedA = SPDA, speedB = SPDB;
+//int speedA0 = SPDA, speedB0 = SPDB;
+//
+//int Encoder_A, Encoder_B;
 
 uint8_t count = 1, area = 0, option = 0, option_NUM = 10, sel_flag = 1, car_screen_flag = 1
                                       , value_num = 0;
 
-//uint8_t value[10][value_len] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 6};
 uint8_t value[10][value_len] = {
-	{1, 2, 3, 4, 5, 6, 7, 8, 9, 0},
-	{1, 2, 3, 4, 5, 6, 7, 8, 9, 1},
-	{1, 2, 3, 4, 5, 6, 7, 8, 9, 2},
-	{1, 2, 3, 4, 5, 6, 7, 8, 9, 3},
-	{1, 2, 3, 4, 5, 6, 7, 8, 9, 4},
-	{1, 2, 3, 4, 5, 6, 7, 8, 9, 5},
-	{1, 2, 3, 4, 5, 6, 7, 8, 9, 6},
-	{1, 2, 3, 4, 5, 6, 7, 8, 9, 7},
-	{1, 2, 3, 4, 5, 6, 7, 8, 9, 8},
-	{1, 2, 3, 4, 5, 6, 7, 8, 9, 9},
+	{1, 2, 3, 4, 5, 6, 7, 8, 9, 0},	//0
+	{1, 2, 3, 4, 5, 6, 7, 8, 9, 1},	//1
+	{1, 2, 3, 4, 5, 6, 7, 8, 9, 2},	//2
+	{1, 2, 3, 4, 5, 6, 7, 8, 9, 3},	//3
+	{1, 2, 3, 4, 5, 6, 7, 8, 9, 4},	//4
+	{1, 2, 3, 4, 5, 6, 7, 8, 9, 5},	//5
+	{1, 2, 3, 4, 5, 6, 7, 8, 9, 6},	//6
+	{1, 2, 3, 4, 5, 6, 7, 8, 9, 7},	//7
+	{1, 2, 3, 4, 5, 6, 7, 8, 9, 8},	//8
+	{1, 2, 3, 4, 5, 6, 7, 8, 9, 9},	//9
 };
 
 uint8_t name[10][10] = {
-	"name00",
-	"name01",
-	"name02",
-	"name03",
-	"name04",
-	"name05",
-	"name06",
-	"name07",
-	"name08",
-	"name09",
+	"name00",	//0
+	"name01",	//1
+	"name02",	//2
+	"name03",	//3
+	"name04",	//4
+	"name05",	//5
+	"name06",	//6
+	"name07",	//7
+	"name08",	//8
+	"name09",	//9
 };
 
 /********************************************/
@@ -76,6 +75,7 @@ int main(void) {
 //	HIGH(STBY);
 //
 //	ReadNow = ReadAll();
+	OLED_Refresh();
 	delay_ms(1000);
 
 	while (1) {
@@ -100,9 +100,10 @@ void loop_screen1(void) {
 			value_num = 0;
 	}
 	if (KEY_Scan(2)) {
-		if (value_num == value[option][value_len - 1])
+		if (value_num == value[option][value_len - 1]) {
 			value[option][value_len - 1] += (value[option][value_len - 1] == 9) ? -9 : 1;
-		else if (value_num < value[option][value_len - 1])
+			value_num += (value_num == value_len - 1) ? 1 - value_len : 1;
+		} else if (value_num < value[option][value_len - 1])
 			value[option][value_num] += (value[option][value_num] == 9) ? -9 : 1;
 		else
 			value[option][value_num - 1] += (value[option][value_num - 1] == 9) ? -9 : 1;
@@ -118,9 +119,31 @@ void loop_screen1(void) {
 	OLED_ShowString(6, 12, name[option], 12, 1);
 	OLED_Refresh();
 	OLED_ClearRF();
+	if (KEY_Scan(3)) {
+		car_screen_flag = 0;
+		sel_flag = 1;
+		OLED_ClearRF();
+		return;
+	}
+	if (KEY_Scan(4)) {
+		sel_flag = 1;
+		OLED_ClearRF();
+		return;
+	}
 	delay_ms(100);
 }
-void loop_car(void) {}
+void loop_car(void) {
+	if (KEY_Scan(1) || KEY_Scan(2) || KEY_Scan(3) || KEY_Scan(4)) {
+		car_screen_flag = 1;
+		//option = 0;
+		//area = 0;	//保留选项记忆
+		return;
+	}
+	OLED_ClearRF();
+	OLED_ShowString(6, 12 + 18 * 1, "C A R", 12, 1);
+	OLED_Refresh();
+	delay_ms(100);
+}
 void loop_screen0(void) {
 	if (KEY_Scan(3)) {
 		sel_flag = 0;
