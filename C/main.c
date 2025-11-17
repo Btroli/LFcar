@@ -1,6 +1,7 @@
 #include "stm32f10x.h"
 #include "key.h"
 //#include "pwm.h"
+#include "mmgj.h"
 #include "oled.h"
 #include "delay.h"
 //#include "button.h"
@@ -57,8 +58,6 @@ uint8_t name[10][10] = {
 void loop_screen0(void);
 void loop_screen1(void);
 void loop_car(void);
-void FuXuan(uint8_t n);
-float cal_value(uint8_t n);
 
 /********************************************/
 
@@ -94,6 +93,18 @@ int main(void) {
 
 /********************************************/
 
+void loop_car(void) {
+	if (KEY_Scan(1) || KEY_Scan(2) || KEY_Scan(3) || KEY_Scan(4)) {
+		car_screen_flag = 1;
+		//option = 0;
+		//area = 0;	//保留选项记忆
+		return;
+	}
+	OLED_ClearRF();
+	OLED_ShowString(6, 12 + 18 * 1, "C A R", 12, 1);
+	OLED_Refresh();
+	delay_ms(100);
+}
 void loop_screen1(void) {
 	if (KEY_Scan(1)) {
 		value_num++;
@@ -131,18 +142,6 @@ void loop_screen1(void) {
 		OLED_ClearRF();
 		return;
 	}
-	delay_ms(100);
-}
-void loop_car(void) {
-	if (KEY_Scan(1) || KEY_Scan(2) || KEY_Scan(3) || KEY_Scan(4)) {
-		car_screen_flag = 1;
-		//option = 0;
-		//area = 0;	//保留选项记忆
-		return;
-	}
-	OLED_ClearRF();
-	OLED_ShowString(6, 12 + 18 * 1, "C A R", 12, 1);
-	OLED_Refresh();
 	delay_ms(100);
 }
 void loop_screen0(void) {
@@ -185,24 +184,4 @@ void loop_screen0(void) {
 	OLED_Refresh();
 	OLED_ClearRF();
 }
-void FuXuan(uint8_t n) {
-	if (n < 3) {
-		OLED_DrawBoxXuLine(0, 8 + 18 * n, 127, 26 + 18 * n, 3, 1);
-		OLED_DrawBoxXuLine(2, 10 + 18 * n, 125, 24 + 18 * n, 3, 1);
-	} else {
-		n -= 3;
-		OLED_DrawBoxLine(0, 8 + 18 * n, 127, 26 + 18 * n, 1);
-		OLED_DrawBoxLine(2, 10 + 18 * n, 125, 24 + 18 * n, 1);
-		OLED_DrawBoxXuLine(0, 8 + 18 * n, 127, 26 + 18 * n, 3, 0);
-		OLED_DrawBoxXuLine(2, 10 + 18 * n, 125, 24 + 18 * n, 3, 0);
-	}
-}
-float cal_value(uint8_t n) {
-	static const float pow10[10] = {
-		1e-9f, 1e-8f, 1e-7f, 1e-6f, 1e-5f, 1e-4f, 1e-3f, 1e-2f, 1e-1f, 1e0f
-	};
-	float m = 0;
-	for (uint8_t i = 0; i < 9; ++i)
-		m = m * 10 + value[n][i];
-	return m * pow10[value[n][9]];
-}
+
