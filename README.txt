@@ -1,6 +1,2 @@
-添加了妙妙工具库，以后杂碎函数可以放里面了
-
-计算value也在mmgj里面，有两种形式，看情况使用。
-使用例：
-1.	float N = cal_value(value[i]);
-2.	cal_value(value[i], &VLE[i]);
+添加定时器TIM6，固定间隔采样
+EvalueA , EvalueB 从此每隔10ms刷新（读取）一次。

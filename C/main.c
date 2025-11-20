@@ -5,7 +5,7 @@
 #include "oled.h"
 #include "delay.h"
 //#include "button.h"
-//#include "encoder.h"
+#include "encoder.h"
 //#include "LightSensor.h"
 
 /********************************************/
@@ -26,6 +26,8 @@
 
 uint8_t count = 1, area = 0, option = 0, option_NUM = 10, sel_flag = 1, car_screen_flag = 1
                                       , value_num = 0;
+
+uint16_t EvalueA=0, EvalueB=0;  				      
 
 uint8_t value[10][value_len] = {
 	{1, 2, 3, 4, 5, 6, 7, 8, 9, 0},	//0
@@ -69,7 +71,7 @@ int main(void) {
 //	PWM_SET();
 	OLED_SET();
 //	Button_SET();
-//	Encoder_PA_SET();
+	Encoder_PA_SET(&EvalueA, &EvalueB);
 //	Guangmin_PG_SET();
 //
 //	HIGH(STBY);
@@ -101,7 +103,11 @@ void loop_car(void) {
 		return;
 	}
 	OLED_ClearRF();
-	OLED_ShowString(6, 12 + 18 * 1, "C A R", 12, 1);
+	OLED_ShowString(6, 12 + 18 * 1, "EvalueA:", 12, 1);
+	OLED_ShowString(6, 12 + 18 * 2, "EvalueB:", 12, 1);
+	OLED_ShowNumNoLen(64, 12 + 18 * 1, EvalueA, 12, 1);
+	OLED_ShowNumNoLen(64, 12 + 18 * 2, EvalueB, 12, 1);
+
 	OLED_Refresh();
 	delay_ms(100);
 }
