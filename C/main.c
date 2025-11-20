@@ -27,7 +27,7 @@
 uint8_t count = 1, area = 0, option = 0, option_NUM = 10, sel_flag = 1, car_screen_flag = 1
                                       , value_num = 0;
 
-uint16_t EvalueA=0, EvalueB=0;  				      
+int16_t EvalueA = 0, EvalueB = 0;
 
 uint8_t value[10][value_len] = {
 	{1, 2, 3, 4, 5, 6, 7, 8, 9, 0},	//0
@@ -70,6 +70,7 @@ int main(void) {
 	KEY_SET();
 //	PWM_SET();
 	OLED_SET();
+		//OLED_DisplayTurn(1);
 //	Button_SET();
 	Encoder_PA_SET(&EvalueA, &EvalueB);
 //	Guangmin_PG_SET();
@@ -105,8 +106,14 @@ void loop_car(void) {
 	OLED_ClearRF();
 	OLED_ShowString(6, 12 + 18 * 1, "EvalueA:", 12, 1);
 	OLED_ShowString(6, 12 + 18 * 2, "EvalueB:", 12, 1);
-	OLED_ShowNumNoLen(64, 12 + 18 * 1, EvalueA, 12, 1);
-	OLED_ShowNumNoLen(64, 12 + 18 * 2, EvalueB, 12, 1);
+	if (EvalueA > 0)
+		OLED_ShowNumNoLen(64, 12 + 18 * 1, EvalueA, 12, 1);
+	else
+		OLED_ShowNumNoLen(64, 12 + 18 * 1, -EvalueA, 12, 1);
+	if (EvalueB > 0)
+		OLED_ShowNumNoLen(64, 12 + 18 * 2, EvalueB, 12, 1);
+	else
+		OLED_ShowNumNoLen(64, 12 + 18 * 2, -EvalueB, 12, 1);
 
 	OLED_Refresh();
 	delay_ms(100);
@@ -190,4 +197,3 @@ void loop_screen0(void) {
 	OLED_Refresh();
 	OLED_ClearRF();
 }
-

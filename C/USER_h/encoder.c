@@ -3,14 +3,14 @@
 
 #define NULL ((void *)0)
 
-static uint16_t *value2 = NULL;
-static uint16_t *value3 = NULL;
+static int16_t *value2 = NULL;
+static int16_t *value3 = NULL;
 
 void Encoder_Init_Tim2(void);
 void Encoder_Init_Tim3(void);
 void TIM6_Init(void);
 
-void Encoder_PA_SET(uint16_t *v2, uint16_t *v3) {
+void Encoder_PA_SET(int16_t *v2, int16_t *v3) {
 	value2 = v2;
 	value3 = v3;
 	Encoder_Init_Tim2();
@@ -150,9 +150,9 @@ void TIM6_Init(void) {
 void TIM6_IRQHandler(void) {
 	if (TIM_GetITStatus(TIM6, TIM_IT_Update) != RESET) {
 
-		*value2 = (u16)TIM2->CNT;
+		*value2 = (int16_t)TIM2->CNT;
 		TIM2->CNT = 0;
-		*value3 = (u16)TIM3->CNT;
+		*value3 = (int16_t)TIM3->CNT;
 		TIM3->CNT = 0;
 
 		TIM_ClearITPendingBit(TIM6, TIM_IT_Update);

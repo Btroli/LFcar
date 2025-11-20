@@ -14,6 +14,7 @@ void KEY_SET(void) {
 }
 
 uint8_t	KEY_Scan(uint8_t pin) {
+	pin = 5 - pin;	//将顺序反转，按钮板反装。
 	pin = (1 << (pin + 3));	//从pin1到pin4
 	if ( GPIO_ReadInputDataBit ( KEY_PORT, pin) == 0 ) {	//检测按键是否被按下
 		delay_ms(10);	//延时消抖
@@ -31,6 +32,7 @@ uint8_t	KEY_Scan(uint8_t pin) {
 }
 
 uint8_t	KEY_ScanNF(uint8_t pin) {
+	pin = 5 - pin;	//将顺序反转，按钮板反装。
 	pin = (1 << (pin + 3));
 	if ( GPIO_ReadInputDataBit ( KEY_PORT, pin) == 0 ) {
 		delay_ms(10);
