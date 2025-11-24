@@ -1,6 +1,6 @@
 #include "stm32f10x.h"
 #include "key.h"
-//#include "pwm.h"
+#include "pwm.h"
 #include "mmgj.h"
 #include "oled.h"
 #include "delay.h"
@@ -24,17 +24,26 @@
 //
 //int Encoder_A, Encoder_B;
 
-uint8_t count = 1, area = 0, option = 0, option_NUM = 10, sel_flag = 1, car_screen_flag = 1
+uint8_t count = 1, area = 0, option = 0, option_NUM = 10, sel_flag = 1, car_screen_flag = 0
                                       , value_num = 0;
 
 int16_t EvalueA = 0, EvalueB = 0;
 
+int16_t SPDA = 0, SPDB = 0;
+
+uint8_t Kp, Ki, Kd;
+
+int16_t GA = 40, GB = 0;
+int16_t PA = 0, PB = 0, pre_PA = 0, pre_PB = 0;
+
+unsigned int sum_PA = 0, sum_PB = 0;
+
 uint8_t value[10][value_len] = {
-	{1, 2, 3, 4, 5, 6, 7, 8, 9, 0},	//0
-	{1, 2, 3, 4, 5, 6, 7, 8, 9, 1},	//1
-	{1, 2, 3, 4, 5, 6, 7, 8, 9, 2},	//2
-	{1, 2, 3, 4, 5, 6, 7, 8, 9, 3},	//3
-	{1, 2, 3, 4, 5, 6, 7, 8, 9, 4},	//4
+	{4, 0, 0, 0, 0, 0, 0, 0, 0, 2},	//0
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 2},	//1
+	{3, 5, 0, 0, 0, 0, 0, 0, 0, 2},	//2
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 2},	//3
+	{0, 3, 0, 0, 0, 0, 0, 0, 0, 2},	//4
 	{1, 2, 3, 4, 5, 6, 7, 8, 9, 5},	//5
 	{1, 2, 3, 4, 5, 6, 7, 8, 9, 6},	//6
 	{1, 2, 3, 4, 5, 6, 7, 8, 9, 7},	//7
@@ -43,11 +52,11 @@ uint8_t value[10][value_len] = {
 };
 
 uint8_t name[10][10] = {
-	"name00",	//0
-	"name01",	//1
-	"name02",	//2
-	"name03",	//3
-	"name04",	//4
+	"GAonly2",	//0
+	"GBonly2",	//1
+	"Kp",	//2
+	"Ki",	//3
+	"Kd",	//4
 	"name05",	//5
 	"name06",	//6
 	"name07",	//7
@@ -60,6 +69,7 @@ uint8_t name[10][10] = {
 void loop_screen0(void);
 void loop_screen1(void);
 void loop_car(void);
+void pidInit(void);
 
 /********************************************/
 
@@ -68,15 +78,15 @@ int main(void) {
 	SystemInit();
 	delay_init();
 	KEY_SET();
-//	PWM_SET();
+	PWM_SET();
 	OLED_SET();
-		//OLED_DisplayTurn(1);
+	//OLED_DisplayTurn(1);
 //	Button_SET();
 	Encoder_PA_SET(&EvalueA, &EvalueB);
 //	Guangmin_PG_SET();
-//
-//	HIGH(STBY);
-//
+
+	HIGH(STBY);
+
 //	ReadNow = ReadAll();
 	OLED_Refresh();
 	delay_ms(1000);
@@ -89,6 +99,8 @@ int main(void) {
 			else
 				loop_screen1();
 			delay_ms(200);
+			Set_PWMA(0);
+			Set_PWMB(0);
 		} else
 			loop_car();
 	}
@@ -99,24 +111,43 @@ int main(void) {
 void loop_car(void) {
 	if (KEY_Scan(1) || KEY_Scan(2) || KEY_Scan(3) || KEY_Scan(4)) {
 		car_screen_flag = 1;
-		//option = 0;
-		//area = 0;	//保留选项记忆
 		return;
 	}
-	OLED_ClearRF();
-	OLED_ShowString(6, 12 + 18 * 1, "EvalueA:", 12, 1);
-	OLED_ShowString(6, 12 + 18 * 2, "EvalueB:", 12, 1);
-	if (EvalueA > 0)
-		OLED_ShowNumNoLen(64, 12 + 18 * 1, EvalueA, 12, 1);
-	else
-		OLED_ShowNumNoLen(64, 12 + 18 * 1, -EvalueA, 12, 1);
-	if (EvalueB > 0)
-		OLED_ShowNumNoLen(64, 12 + 18 * 2, EvalueB, 12, 1);
-	else
-		OLED_ShowNumNoLen(64, 12 + 18 * 2, -EvalueB, 12, 1);
 
+	Set_PWMA(SPDA);
+	Set_PWMB(SPDB);
+	OLED_ShowString(6, 12, "SPDA", 12, 1);
+	OLED_ShowString(70, 12, "SPDB", 12, 1);
+	OLED_ShowNum(6, 12 + 10, SPDA, 4, 12, 1);
+	OLED_ShowNum(70, 12 + 10, SPDB, 4, 12, 1);
+	OLED_ShowString(6, 12 + 20, "ECDA", 12, 1);
+	OLED_ShowString(70, 12 + 20, "ECDB", 12, 1);
+	OLED_ShowNum(6, 12 + 30, EvalueA, 4, 12, 1);
+	OLED_ShowNum(70, 12 + 30, EvalueB, 4, 12, 1);
 	OLED_Refresh();
-	delay_ms(100);
+	OLED_ClearRF();
+
+	pre_PA = PA;
+	pre_PB = PB;
+	PA = GA - EvalueA;
+	PB = GB - EvalueB;
+
+	if (PA == 1 || PA == -1)
+		PA = 0;
+
+	sum_PA += PA;
+	sum_PB += PB;
+
+
+	SPDA = Kp * PA + Ki * sum_PA - Kd * (PA - pre_PA);
+
+	//SPDA = Kp * PA + Ki * sum_PA + Kd * (PA - pre_PA);
+
+	if (SPDA > 7000)
+		SPDA = 7000;
+
+
+	delay_ms(200);
 }
 void loop_screen1(void) {
 	if (KEY_Scan(1)) {
@@ -148,6 +179,9 @@ void loop_screen1(void) {
 		car_screen_flag = 0;
 		sel_flag = 1;
 		OLED_ClearRF();
+
+		pidInit();
+
 		return;
 	}
 	if (KEY_Scan(4)) {
@@ -166,6 +200,9 @@ void loop_screen0(void) {
 	if (KEY_Scan(4)) {
 		car_screen_flag = 0;
 		OLED_ClearRF();
+
+		pidInit();
+
 		return;
 	}
 	if (KEY_Scan(1)) {
@@ -196,4 +233,15 @@ void loop_screen0(void) {
 
 	OLED_Refresh();
 	OLED_ClearRF();
+}
+void pidInit(void) {
+	GA = value[0][0] * 10 + value[0][1];
+	GB = value[1][0] * 10 + value[1][1];
+	Kp = value[2][0] * 10 + value[2][1];
+	Ki = value[3][0] * 10 + value[3][1];
+	Kd = value[4][0] * 10 + value[4][1];
+
+	SPDA = 0, SPDB = 0;
+	PA = 0, PB = 0, pre_PA = 0, pre_PB = 0;
+	sum_PA = 0, sum_PB = 0;
 }
