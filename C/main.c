@@ -13,16 +13,8 @@
 //#define LEFT	0b11100000;
 //#define MID 	0b00011000;
 //#define RIGHT	0b00000111;
-//
-//#define SPDA 3870
-//#define SPDB 3600
 
 #define value_len 10
-
-//int speedA = SPDA, speedB = SPDB;
-//int speedA0 = SPDA, speedB0 = SPDB;
-//
-//int Encoder_A, Encoder_B;
 
 uint8_t count = 1, area = 0, option = 0, option_NUM = 10, sel_flag = 1, car_screen_flag = 0, value_num = 0;
 
@@ -30,37 +22,38 @@ int16_t EvalueA = 0, EvalueB = 0;
 
 int16_t SPDA = 0, SPDB = 0;
 
-uint8_t Kp, Ki, Kd;
+uint8_t Kp_A, Ki_A, Kd_A, Kp_B, Ki_B, Kd_B;
 
-int16_t GA = 40, GB = 0;
-int16_t PA = 0, PB = 0, pre_PA = 0, pre_PB = 0;
+uint8_t loop_car_delaytime = 10;
 
-unsigned int sum_PA = 0, sum_PB = 0;
+int16_t GA = 40, GB = 40;
+
+int16_t PA = 0, PB = 0, pre_PA = 0, pre_PB = 0, sum_PA = 0, sum_PB = 0;
 
 uint8_t value[10][value_len] = {
 	{4, 0, 0, 0, 0, 0, 0, 0, 0, 2},	//0
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 2},	//1
-	{3, 5, 0, 0, 0, 0, 0, 0, 0, 2},	//2
-	{1, 0, 0, 0, 0, 0, 0, 0, 0, 2},	//3
-	{0, 3, 0, 0, 0, 0, 0, 0, 0, 2},	//4
-	{1, 2, 3, 4, 5, 6, 7, 8, 9, 5},	//5
-	{1, 2, 3, 4, 5, 6, 7, 8, 9, 6},	//6
-	{1, 2, 3, 4, 5, 6, 7, 8, 9, 7},	//7
-	{1, 2, 3, 4, 5, 6, 7, 8, 9, 8},	//8
-	{1, 2, 3, 4, 5, 6, 7, 8, 9, 9},	//9
+	{4, 0, 0, 0, 0, 0, 0, 0, 0, 2},	//1
+	{5, 0, 0, 0, 0, 0, 0, 0, 0, 2},	//2
+	{3, 0, 0, 0, 0, 0, 0, 0, 0, 2},	//3
+	{0, 7, 0, 0, 0, 0, 0, 0, 0, 2},	//4
+	{5, 0, 0, 0, 0, 0, 0, 0, 0, 2},	//5
+	{3, 0, 0, 0, 0, 0, 0, 0, 0, 2},	//6
+	{0, 7, 0, 0, 0, 0, 0, 0, 0, 2},	//7
+	{2, 0, 0, 0, 0, 0, 0, 0, 0, 3},	//8
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},	//9
 };
 
 uint8_t name[10][10] = {
-	"GAonly2",	//0
-	"GBonly2",	//1
-	"Kp",	//2
-	"Ki",	//3
-	"Kd",	//4
-	"name05",	//5
-	"name06",	//6
-	"name07",	//7
-	"name08",	//8
-	"name09",	//9
+	"GA",	//0
+	"GB",	//1
+	"Kp A",	//2
+	"Ki A",	//3
+	"Kd A",	//4
+	"Kp B",	//5
+	"Ki B",	//6
+	"Kd B",	//7
+	"delay ms",	//8
+	"name",	//9
 };
 
 /********************************************/
@@ -79,7 +72,6 @@ int main(void) {
 	KEY_SET();
 	PWM_SET();
 	OLED_SET();
-	//OLED_DisplayTurn(1);
 //	Button_SET();
 	Encoder_PA_SET(&EvalueA, &EvalueB);
 //	Guangmin_PG_SET();
@@ -108,10 +100,29 @@ int main(void) {
 /********************************************/
 
 void loop_car(void) {
-	if (KEY_Scan(1) || KEY_Scan(2) || KEY_Scan(3) || KEY_Scan(4)) {
+	if (KEY_Scan(4)) {
 		car_screen_flag = 1;
 		return;
 	}
+	if (KEY_Scan(1)) {
+		GA += 10;
+		if (GA > 80)
+			GA -= 80;
+		GB = GA;
+	}
+	if (KEY_Scan(2)) {
+		GA += 20;
+		if (GA > 80)
+			GA -= 80;
+		GB = GA;
+	}
+	if (KEY_Scan(3)) {
+		GA += 30;
+		if (GA > 80)
+			GA -= 80;
+		GB = GA;
+	}
+
 
 	Set_PWMA(SPDA);
 	Set_PWMB(SPDB);
@@ -123,6 +134,13 @@ void loop_car(void) {
 	OLED_ShowString(70, 12 + 20, "ECDB", 12, 1);
 	OLED_ShowNum(6, 12 + 30, EvalueA, 4, 12, 1);
 	OLED_ShowNum(70, 12 + 30, EvalueB, 4, 12, 1);
+
+	OLED_ShowString(36, 12, "GA", 12, 1);
+	OLED_ShowNum(36, 12 + 10, GA, 2, 12, 1);
+	OLED_ShowString(36, 12 + 20, "GB", 12, 1);
+	OLED_ShowNum(36, 12 + 30, GB, 2, 12, 1);
+
+
 	OLED_Refresh();
 	OLED_ClearRF();
 
@@ -133,27 +151,39 @@ void loop_car(void) {
 
 	if (PA == 1 || PA == -1)
 		PA = 0;
+	if (PB == 1 || PB == -1)
+		PB = 0;
 
 	sum_PA += PA;
 	sum_PB += PB;
 
 
-	SPDA = Kp * PA + Ki * sum_PA - Kd * (PA - pre_PA);
+	SPDA = Kp_A * PA + Ki_A * sum_PA - Kd_A * (PA - pre_PA);
+	SPDB = Kp_B * PB + Ki_B * sum_PB - Kd_B * (PB - pre_PB);
 
 	//SPDA = Kp * PA + Ki * sum_PA + Kd * (PA - pre_PA);
 
 	if (SPDA > 7000)
 		SPDA = 7000;
+	if (SPDB > 7000)
+		SPDB = 7000;
 
 
-	delay_ms(200);
+	delay_ms(loop_car_delaytime);
 }
 void pidInit(void) {
 	GA = value[0][0] * 10 + value[0][1];
 	GB = value[1][0] * 10 + value[1][1];
-	Kp = value[2][0] * 10 + value[2][1];
-	Ki = value[3][0] * 10 + value[3][1];
-	Kd = value[4][0] * 10 + value[4][1];
+	Kp_A = value[2][0] * 10 + value[2][1];
+	Ki_A = value[3][0] * 10 + value[3][1];
+	Kd_A = value[4][0] * 10 + value[4][1];
+	Kp_B = value[5][0] * 10 + value[5][1];
+	Ki_B = value[6][0] * 10 + value[6][1];
+	Kd_B = value[7][0] * 10 + value[7][1];
+
+	loop_car_delaytime = value[8][0] * 100 + value[8][1] * 10 + value[8][2];
+	if (!loop_car_delaytime)	//delay_ms(0)会爆炸
+		loop_car_delaytime++;
 
 	SPDA = 0, SPDB = 0;
 	PA = 0, PB = 0, pre_PA = 0, pre_PB = 0;

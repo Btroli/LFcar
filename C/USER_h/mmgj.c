@@ -61,6 +61,7 @@ void loop_screen1(void) {
 	if (KEY_Scan(3)) {
 		car_screen_flag = 0;
 		sel_flag = 1;
+		value_num = 0;
 		OLED_ClearRF();
 
 		pidInit();
@@ -69,6 +70,7 @@ void loop_screen1(void) {
 	}
 	if (KEY_Scan(4)) {
 		sel_flag = 1;
+		value_num = 0;
 		OLED_ClearRF();
 		return;
 	}
