@@ -65,6 +65,7 @@ void loop_screen1(void) {
 		OLED_ClearRF();
 
 		pidInit();
+		pidInit_1();
 
 		return;
 	}
@@ -87,6 +88,7 @@ void loop_screen0(void) {
 		OLED_ClearRF();
 
 		pidInit();
+		pidInit_1();
 
 		return;
 	}

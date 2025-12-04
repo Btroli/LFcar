@@ -17,6 +17,7 @@ void loop_screen0(void);
 void loop_screen1(void);
 
 void pidInit(void);
+void pidInit_1(void);
 
 //下面的值，除以100就是 速度 cm/s
 //速度 距离 计算，查表更方便
