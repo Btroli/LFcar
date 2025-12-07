@@ -10,9 +10,9 @@
 
 /********************************************/
 
-//#define LEFT	0b11100000;
-//#define MID 	0b00011000;
-//#define RIGHT	0b00000111;
+#define LEFT	0b11100000
+#define MID 	0b00011000
+#define RIGHT	0b00000111
 
 #define value_len 10
 
@@ -24,20 +24,22 @@ uint8_t Kp_A = 50, Ki_A = 30, Kd_A = 7, Kp_B = 50, Ki_B = 30, Kd_B = 7;
 uint8_t loop_car_delaytime = 10;
 int16_t PA = 0, PB = 0, pre_PA = 0, pre_PB = 0, sum_PA = 0, sum_PB = 0;
 
-//Ë∑ùÁ¶ª
-uint32_t distance = 120000;	//ÊúüÊúõ120cmÔºåÈáè‰πò1000ÂÄç„ÄÇ
+//æ‡¿Î
+uint32_t distance = 120000;	//∆⁄Õ˚120cm£¨¡ø≥À1000±∂°£
 uint32_t distance_now = 0;
 
 //TIM
 unsigned int Stime;
+//volatile int16_t EvalueA = 0, EvalueB = 0;
 int16_t EvalueA = 0, EvalueB = 0;
 
-//ÁªôÂÆöÂÄº
+//∏¯∂®÷µ
 int16_t GA = 40, GB = 40;
 
 //pid1
-uint8_t ReadNow;
-uint8_t LKp, LKi, LKd;
+uint8_t ReadNow, LastRead;
+float LKp, LKi, LKd;
+//uint8_t LKp, LKi, LKd;
 int8_t Er, pre_Er;
 int16_t sum_Er;
 static const int8_t jq[8] = {25, 20, 12, 5, -5, -12, -20, -25};
@@ -46,15 +48,15 @@ uint8_t GAB;
 
 
 uint8_t value[10][value_len] = {
-	{2, 0, 0, 0, 0, 0, 0, 0, 0, 2},	//0
-	{0, 6, 0, 0, 0, 0, 0, 0, 0, 2},	//1
-	{0, 2, 0, 0, 0, 0, 0, 0, 0, 2},	//2
-	{2, 8, 0, 0, 0, 0, 0, 0, 0, 2},	//3
+	{0, 3, 8, 0, 0, 0, 0, 0, 0, 3},	//0
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 3},	//1
+	{0, 0, 4, 0, 0, 0, 0, 0, 0, 3},	//2
+	{2, 0, 0, 0, 0, 0, 0, 0, 0, 2},	//3
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//4
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//5
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//6
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//7
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//8
+	{0, 1, 0, 0, 0, 0, 0, 0, 0, 5},	//8
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//9
 };
 
@@ -120,16 +122,38 @@ int main(void) {
 /********************************************/
 
 void loop_car(void) {
+
+	ReadNow = ReadAll();
+
+	if (ReadNow) {
+		pid1();
+		LastRead = ReadNow;
+	} else if (LastRead & LEFT) {
+		GA = 0;
+		GB = 60;
+
+		sum_PA=0;
+		sum_PB=0;
+		
+		//sum_Er/=2;
+	} else if (LastRead & RIGHT) {
+		GA = 60;
+		GB = 0;
+
+		sum_PA=0;
+		sum_PB=0;
+		
+		//sum_Er/=2;
+	}
+
 	pid0();
-	pid1();
 
 	delay_ms(loop_car_delaytime);
 }
 
 void pid1(void) {
-	ReadNow = ReadAll();
 
-	//if ReadNow ÁâπÊÆäÊÉÖÂÜµ
+	//if ReadNow Ãÿ ‚«Èøˆ
 //	if (ReadNow == 0) {
 //		LOW(STBY);
 //		if (KEY_Scan(4)) {
@@ -137,7 +161,7 @@ void pid1(void) {
 //			return;
 //		}
 //	}
-	//‰∏ã‰∏∫Áõ¥Á∫ø
+	//œ¬Œ™÷±œﬂ
 
 
 	pre_Er = Er;
@@ -148,27 +172,31 @@ void pid1(void) {
 		if (ReadNow & (1 << i))
 			Er += jq[i];
 
-	if (sum_Er < GAB * 500)
+	if (sum_Er < GAB * 100 && sum_Er > GAB * -100)
 		sum_Er += Er;
 
-	GB = LKp * Er + LKi * sum_Er - LKd * (Er - pre_Er);
+	GB = LKp * Er + LKi * sum_Er + LKd * (Er - pre_Er);
 	GB /= 200;
 
 	GA = GAB + GB;
 	GB = GAB - GB;
 
-	GA = (-70 < GA && GA < 70) ? GA : ((GA < 0) ? -70 : 70);
-	GB = (-70 < GB && GB < 70) ? GB : ((GB < 0) ? -70 : 70);
+	GA = (-20 < GA && GA < 70) ? GA : ((GA < 0) ? -20 : 70);
+	GB = (-20 < GB && GB < 70) ? GB : ((GB < 0) ? -20 : 70);
 
 }
 void pidInit_1(void) {
-	LKp = value[0][0] * 10 + value[0][1];
-	LKi = value[1][0] * 10 + value[1][1];
-	LKd = value[2][0] * 10 + value[2][1];
+	LKp = value[0][0] * 100 + value[0][1] * 10 + value[0][2];
+	//LKi = value[1][0] * 10 + value[1][1];
+
+	LKi = cal_value(&value[1]);
+	//LKd = cal_value(&value[2]);
+
+	LKd = value[2][0] * 100 + value[2][1] * 10 + value[2][2];
 
 	GAB = value[3][0] * 10 + value[3][1];
 
-	//ÂÄº=cal_value(&value[i]);	//Á¨¨iË°åÁöÑÂÄº
+	//÷µ=cal_value(&value[i]);	//µ⁄i––µƒ÷µ
 
 	Er = 0;
 	pre_Er = 0;
@@ -240,7 +268,7 @@ void pidInit(void) {
 
 	loop_car_delaytime = value[8][0] * 100 + value[8][1] * 10 + value[8][2];
 
-	if (!loop_car_delaytime)	//delay_ms(0)‰ºöÁàÜÁÇ∏
+	if (!loop_car_delaytime)	//delay_ms(0)ª·±¨’®
 		loop_car_delaytime++;
 
 	SPDA = 0, SPDB = 0;
