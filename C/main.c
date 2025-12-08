@@ -25,13 +25,11 @@ uint8_t loop_car_delaytime = 10;
 int16_t PA = 0, PB = 0, pre_PA = 0, pre_PB = 0, sum_PA = 0, sum_PB = 0;
 
 //距离
-uint32_t distance = 120000;	//期望120cm，量乘1000倍。
-uint32_t distance_now = 0;
+uint32_t distance = 0, distance_now = 0, distance_pj = 0;
 
 //TIM
-unsigned int Stime;
-//volatile int16_t EvalueA = 0, EvalueB = 0;
-int16_t EvalueA = 0, EvalueB = 0;
+volatile uint32_t Stime;
+volatile int16_t EvalueA = 0, EvalueB = 0;
 
 //给定值
 int16_t GA = 40, GB = 40;
@@ -39,20 +37,23 @@ int16_t GA = 40, GB = 40;
 //pid1
 uint8_t ReadNow, LastRead;
 float LKp, LKi, LKd;
-//uint8_t LKp, LKi, LKd;
 int8_t Er, pre_Er;
 int16_t sum_Er;
 static const int8_t jq[8] = {25, 20, 12, 5, -5, -12, -20, -25};
-
 uint8_t GAB;
+
+//stop
+uint8_t bian = 0, bian_pre = 0, bian_flag = 1;
+uint8_t quan = 8;
+volatile uint32_t Stime_bian = 0xFFFFFFFF + 1 - 200;	//2^32 - 200
 
 
 uint8_t value[10][value_len] = {
 	{0, 3, 8, 0, 0, 0, 0, 0, 0, 3},	//0
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 3},	//1
-	{0, 0, 4, 0, 0, 0, 0, 0, 0, 3},	//2
+	{0, 0, 0, 0, 6, 0, 0, 0, 0, 3},	//1
+	{0, 6, 6, 0, 0, 0, 0, 0, 0, 3},	//2
 	{2, 0, 0, 0, 0, 0, 0, 0, 0, 2},	//3
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//4
+	{0, 0, 1, 0, 0, 0, 0, 0, 0, 3},	//4
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//5
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//6
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//7
@@ -65,7 +66,7 @@ uint8_t name[10][10] = {
 	"LKi",	//1
 	"LKd",	//2
 	"GAB",	//3
-	"name4",	//4
+	"quan",	//4
 	"name5",	//5
 	"name6",	//6
 	"name7",	//7
@@ -100,7 +101,6 @@ int main(void) {
 
 	LOW(STBY);
 
-//	ReadNow = ReadAll();
 	OLED_Refresh();
 	delay_ms(1000);
 
@@ -128,41 +128,63 @@ void loop_car(void) {
 	if (ReadNow) {
 		pid1();
 		LastRead = ReadNow;
-	} else if (LastRead & LEFT) {
-		GA = 0;
-		GB = 60;
+		bian_flag = 1;
+	} else {
+		if (LastRead & LEFT) {
+			GA = 0;
+			GB = 60;
+		} else if (LastRead & RIGHT) {
+			GA = 60;
+			GB = 0;
+		}
+		sum_PA = 0;
+		sum_PB = 0;
 
-		sum_PA=0;
-		sum_PB=0;
-		
-		//sum_Er/=2;
-	} else if (LastRead & RIGHT) {
-		GA = 60;
-		GB = 0;
-
-		sum_PA=0;
-		sum_PB=0;
-		
-		//sum_Er/=2;
+		if (bian_flag && Stime - Stime_bian >= 200) {
+			bian++;
+			Stime_bian = Stime;
+		}
+		bian_flag = 0;
 	}
 
 	pid0();
 
 	delay_ms(loop_car_delaytime);
+
+	distance_now += EcdSpeed[(EvalueA + EvalueB) / 2];
+
+	if (bian != bian_pre) {
+		bian_pre = bian;
+
+		if (bian == 1)
+			distance = distance_now;
+		else if (bian == 4 * quan) {
+			distance_pj += distance_now;
+			distance_pj /= (4 * quan - 1);
+			distance = distance_pj - distance;
+		} else
+			distance_pj += distance_now;
+		distance_now = 0;
+	}
+
+	if (bian == 4 * quan)
+		if (distance_now >= distance) {
+			LOW(STBY);
+			while (1)
+				if (KEY_Scan(4)) {
+					car_screen_flag = 1;
+					bian = 0;
+					bian_pre = 0;
+					bian_flag = 1;
+					quan = 8;
+					Stime_bian = 0xFFFFFFFF + 1 - 200;
+					Stime = 0;
+					return;
+				}
+		}
 }
 
 void pid1(void) {
-
-	//if ReadNow 特殊情况
-//	if (ReadNow == 0) {
-//		LOW(STBY);
-//		if (KEY_Scan(4)) {
-//			car_screen_flag = 1;
-//			return;
-//		}
-//	}
-	//下为直线
-
 
 	pre_Er = Er;
 
@@ -189,14 +211,16 @@ void pidInit_1(void) {
 	LKp = value[0][0] * 100 + value[0][1] * 10 + value[0][2];
 	//LKi = value[1][0] * 10 + value[1][1];
 
-	LKi = cal_value(&value[1]);
-	//LKd = cal_value(&value[2]);
+	LKi = cal_value(value[1]);
+	//LKd = cal_value(value[2]);
 
 	LKd = value[2][0] * 100 + value[2][1] * 10 + value[2][2];
 
 	GAB = value[3][0] * 10 + value[3][1];
 
-	//值=cal_value(&value[i]);	//第i行的值
+	quan = value[4][0] * 100 + value[4][1] * 10 + value[4][2];
+
+	//值=cal_value(value[i]);	//第i行的值
 
 	Er = 0;
 	pre_Er = 0;
@@ -245,23 +269,6 @@ void pid0(void) {
 	if (SPDB > 7000)
 		SPDB = 7000;
 
-	//distance_now += EcdSpeed[(EvalueA + EvalueB) / 2];
-
-	//if (distance <= distance_now) {
-	//	Set_PWMA(-3000);
-	//	Set_PWMB(-3000);
-	//	delay_ms(10);
-	//	LOW(STBY);
-
-	//	while (1)
-	//		if (KEY_Scan(4)) {
-	//			car_screen_flag = 1;
-	//			distance_now = 0;
-	//			Stime = 0;
-	//			return;
-	//		}
-
-	//}
 }
 void pidInit(void) {
 	HIGH(STBY);

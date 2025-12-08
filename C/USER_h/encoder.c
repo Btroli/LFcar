@@ -3,8 +3,8 @@
 
 #define NULL ((void *)0)
 
-static int16_t *value2 = NULL;
-static int16_t *value3 = NULL;
+static volatile int16_t *value2 = NULL;
+static volatile int16_t *value3 = NULL;
 
 unsigned int *SystemTime = NULL;
 
@@ -12,7 +12,7 @@ void Encoder_Init_Tim2(void);
 void Encoder_Init_Tim3(void);
 void TIM6_Init(void);
 
-void Encoder_PA_SET(int16_t *v2, int16_t *v3, unsigned int *Stime) {
+void Encoder_PA_SET(volatile int16_t *v2, volatile int16_t *v3, volatile uint32_t *Stime) {
 	SystemTime = Stime;
 
 	value2 = v2;
@@ -154,7 +154,7 @@ void TIM6_Init(void) {
 void TIM6_IRQHandler(void) {
 	if (TIM_GetITStatus(TIM6, TIM_IT_Update) != RESET) {
 
-		*SystemTime++;
+		(*SystemTime)++;
 
 		*value2 = (int16_t)TIM2->CNT;
 		TIM2->CNT = 0;
