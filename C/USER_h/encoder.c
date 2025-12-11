@@ -6,7 +6,7 @@
 static volatile int16_t *value2 = NULL;
 static volatile int16_t *value3 = NULL;
 
-unsigned int *SystemTime = NULL;
+static volatile uint32_t *SystemTime = NULL;
 
 void Encoder_Init_Tim2(void);
 void Encoder_Init_Tim3(void);

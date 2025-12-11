@@ -1,5 +1,10 @@
 #include "mmgj.h"
 
+//pid0
+int16_t SPDA = 0, SPDB = 0;
+uint8_t Kp_A = 50, Ki_A = 30, Kd_A = 7, Kp_B = 50, Ki_B = 30, Kd_B = 7;
+int16_t PA = 0, PB = 0, pre_PA = 0, pre_PB = 0, sum_PA = 0, sum_PB = 0;
+
 void cal_valueP(uint8_t *p, float *v) {
 	static const float pow10[10] = {
 		1e-9f, 1e-8f, 1e-7f, 1e-6f, 1e-5f, 1e-4f, 1e-3f, 1e-2f, 1e-1f, 1e0f
@@ -120,4 +125,60 @@ void loop_screen0(void) {
 
 	OLED_Refresh();
 	OLED_ClearRF();
+}
+
+void pid0(void) {
+	if (KEY_Scan(4)) {
+		car_screen_flag = 1;
+		return;
+	}
+
+	Set_PWMA(SPDA);
+	Set_PWMB(SPDB);
+	OLED_ShowString(6, 12, "SPDA", 12, 1);
+	OLED_ShowString(70, 12, "SPDB", 12, 1);
+	OLED_ShowNum(6, 12 + 10, SPDA, 4, 12, 1);
+	OLED_ShowNum(70, 12 + 10, SPDB, 4, 12, 1);
+	OLED_ShowString(6, 12 + 20, "ECDA", 12, 1);
+	OLED_ShowString(70, 12 + 20, "ECDB", 12, 1);
+	OLED_ShowNum(6, 12 + 30, EvalueA, 4, 12, 1);
+	OLED_ShowNum(70, 12 + 30, EvalueB, 4, 12, 1);
+
+	OLED_ShowString(36, 12, "GA", 12, 1);
+	OLED_ShowNum(36, 12 + 10, GA, 2, 12, 1);
+	OLED_ShowString(36, 12 + 20, "GB", 12, 1);
+	OLED_ShowNum(36, 12 + 30, GB, 2, 12, 1);
+
+
+	OLED_Refresh();
+	OLED_ClearRF();
+
+	pre_PA = PA;
+	pre_PB = PB;
+	PA = GA - EvalueA;
+	PB = GB - EvalueB;
+
+	sum_PA += PA;
+	sum_PB += PB;
+
+	SPDA = Kp_A * PA + Ki_A * sum_PA - Kd_A * (PA - pre_PA);
+	SPDB = Kp_B * PB + Ki_B * sum_PB - Kd_B * (PB - pre_PB);
+
+	if (SPDA > 7000)
+		SPDA = 7000;
+	if (SPDB > 7000)
+		SPDB = 7000;
+
+}
+void pidInit(void) {
+	HIGH(STBY);
+
+	//loop_car_delaytime = value[8][0] * 100 + value[8][1] * 10 + value[8][2];
+
+	//if (!loop_car_delaytime)	//delay_ms(0)会爆炸
+	//	loop_car_delaytime++;
+
+	SPDA = 0, SPDB = 0;
+	PA = 0, PB = 0, pre_PA = 0, pre_PB = 0;
+	sum_PA = 0, sum_PB = 0;
 }

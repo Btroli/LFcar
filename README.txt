@@ -1,13 +1,8 @@
-此版本：方框停车 几乎完美版，具有圈数的选项。
+修复细节：
+unsigned int *SystemTime   ->   static volatile uint32_t *SystemTime
 
-为什么Stime一直是零呢？
-因为
-	*SystemTime++ 等于 *(SystemTime++)
-所以应该是这样的
-	(*SystemTime)++
-。修复了这个问题。
+将pid0部分以及有关变量迁移至妙妙工具。
 
-改变EvalueA,EvalueB,Stime的类型为volatile int16_t。 
-
-一些细节。
+整合普通跑圈与方框跑圈，quan=0就是普通跑圈了。
+车大改装后原pid值明显不适应。需要再调。
 

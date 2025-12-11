@@ -4,10 +4,19 @@
 #include "stdint.h"
 #include "oled.h"
 #include "key.h"
+#include "pwm.h"
 
 #define value_len 10
 extern uint8_t count, area, option, option_NUM, sel_flag, car_screen_flag, value_num;
 extern uint8_t value[10][value_len], name[10][10];
+
+//pid0
+extern int16_t SPDA, SPDB;
+extern uint8_t Kp_A, Ki_A, Kd_A, Kp_B, Ki_B, Kd_B;
+extern int16_t PA, PB, pre_PA, pre_PB, sum_PA, sum_PB;
+extern volatile int16_t EvalueA, EvalueB;
+extern int16_t GA,GB;
+
 
 void cal_valueP(uint8_t *p, float *v);
 float cal_value(uint8_t *p);
