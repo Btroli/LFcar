@@ -1,11 +1,13 @@
 #include "stm32f10x.h"
 #include "key.h"
 #include "pwm.h"
+#include "tim.h"
 #include "mmgj.h"
 #include "oled.h"
 #include "delay.h"
 //#include "button.h"
 #include "encoder.h"
+#include "ultrasound.h"
 #include "LightSensor.h"
 
 /********************************************/
@@ -43,14 +45,17 @@ uint8_t bian = 0, bian_pre = 0, bian_flag = 1;
 uint8_t quan = 0;
 volatile uint32_t Stime_bian = 0xFFFFFFFF + 1 - 200;	//2^32 - 200
 
+//bizhang
+uint8_t csb_flag = 1;
+
 
 uint8_t value[10][value_len] = {
 	{0, 3, 8, 0, 0, 0, 0, 0, 0, 3},	//0
 	{0, 0, 0, 0, 6, 0, 0, 0, 0, 3},	//1
 	{0, 6, 6, 0, 0, 0, 0, 0, 0, 3},	//2
-	{2, 0, 0, 0, 0, 0, 0, 0, 0, 2},	//3
+	{3, 0, 0, 0, 0, 0, 0, 0, 0, 2},	//3
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 3},	//4
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//5
+	{0, 1, 0, 0, 0, 0, 0, 0, 0, 2},	//5
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//6
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//7
 	{0, 1, 0, 0, 0, 0, 0, 0, 0, 5},	//8
@@ -63,7 +68,7 @@ uint8_t name[10][10] = {
 	"LKd",	//2
 	"GAB",	//3
 	"quan",	//4
-	"name5",	//5
+	"BiZhang",	//5
 	"name6",	//6
 	"name7",	//7
 	"name8",	//8
@@ -76,6 +81,8 @@ uint8_t name[10][10] = {
 //void loop_screen1(void);
 void loop_car(void);
 void loop_car_quan(void);
+
+void loop_car_bz(void);
 
 void pidInit(void);
 
@@ -97,10 +104,13 @@ int main(void) {
 	PWM_SET();
 	OLED_SET();
 //	Button_SET();
-	Encoder_PA_SET(&EvalueA, &EvalueB, &Stime);
+	Encoder_PA_SET();
+	UltraSound_SET();
 	Guangmin_PG_SET();
+	TIM67_SET(&EvalueA, &EvalueB, &Stime);
 
 	LOW(STBY);
+	TRIG_LOW;
 
 	OLED_Refresh();
 	delay_ms(1000);
@@ -118,6 +128,8 @@ int main(void) {
 		} else {
 			if (quan)
 				loop_car_quan();
+			else if (csb_flag)
+				loop_car_bz();
 			else
 				loop_car();
 		}
@@ -125,6 +137,18 @@ int main(void) {
 }
 
 /********************************************/
+void loop_car_bz(void) {
+	OLED_ShowString(6, 12, "time", 12, 1);
+	OLED_ShowString(70, 12, "distance", 12, 1);
+	OLED_ShowNumNoLen(6, 12 + 10, time, 12, 1);
+	OLED_ShowNumNoLen(70, 12 + 10, ultrasound_distance(), 12, 1);
+	OLED_Refresh();
+	OLED_ClearRF();
+
+	CSB;
+	delay_ms(loop_car_delaytime);
+}
+
 void loop_car(void) {
 
 	ReadNow = ReadAll();
@@ -147,7 +171,7 @@ void loop_car(void) {
 
 	pid0();
 
-	delay_ms(loop_car_delaytime);
+	delay_ms(300);
 }
 
 void loop_car_quan(void) {
@@ -247,9 +271,10 @@ void pidInit_1(void) {
 
 	quan = value[4][0] * 100 + value[4][1] * 10 + value[4][2];
 
+	csb_flag = value[4][0] * 10 + value[4][1];
+
 	Er = 0;
 	pre_Er = 0;
 	sum_Er = 0;
 
 }
-

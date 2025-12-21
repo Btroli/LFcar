@@ -1,8 +1,9 @@
-修复细节：
-unsigned int *SystemTime   ->   static volatile uint32_t *SystemTime
+超声波功能完成。
 
-将pid0部分以及有关变量迁移至妙妙工具。
+超声波在半米内十分稳定，半米外不一定。
+新增tim,ultrasound两个库。
 
-整合普通跑圈与方框跑圈，quan=0就是普通跑圈了。
-车大改装后原pid值明显不适应。需要再调。
+使用tim5计时echo时间
+使用tim7计时trig时间（20us）
 
+待将time变量名换掉，这个名字太大了，压不住。改成ultrasound_time
