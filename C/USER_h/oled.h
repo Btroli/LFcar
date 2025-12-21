@@ -13,15 +13,15 @@
 //#define OLED_RES_Clr() GPIO_ResetBits(GPIOD,GPIO_Pin_4)//RES
 //#define OLED_RES_Set() GPIO_SetBits(GPIOD,GPIO_Pin_4)
 
-#define OLED_CMD  0	//Ğ´ÃüÁî
-#define OLED_DATA 1	//Ğ´Êı¾İ
+#define OLED_CMD  0	//å†™å‘½ä»¤
+#define OLED_DATA 1	//å†™æ•°æ®
 
 //*********************************************************************************************
 /*
-´ËÆÁÄ»Ëğ»µ£º³ÌĞòÖĞ×Ö·û±ØĞëy>5²ÅÄÜÍêÕûÏÔÊ¾¡£(12´óµÄ×Ö·ûÉÏ·½¿ÕÁ½ĞĞ¡£)
+æ­¤å±å¹•æŸåï¼šç¨‹åºä¸­å­—ç¬¦å¿…é¡»y>5æ‰èƒ½å®Œæ•´æ˜¾ç¤ºã€‚(12å¤§çš„å­—ç¬¦ä¸Šæ–¹ç©ºä¸¤è¡Œã€‚)
 
-ĞĞ£º(0-63)£¬¹²64ĞĞ¡£y
-ÁĞ£º(0-127)£¬¹²128ÁĞ¡£x
+è¡Œï¼š(0-63)ï¼Œå…±64è¡Œã€‚y
+åˆ—ï¼š(0-127)ï¼Œå…±128åˆ—ã€‚x
 
 		0-y
 		|
@@ -30,40 +30,40 @@
 */
 //*********************************************************************************************
 /*
-´ı°ì£ºÇå³ıOLED_GRAMÖĞµÄÒ»²¿·ÖÇøÓò¡£Éè¼Æº¯Êı¡£
+å¾…åŠï¼šæ¸…é™¤OLED_GRAMä¸­çš„ä¸€éƒ¨åˆ†åŒºåŸŸã€‚è®¾è®¡å‡½æ•°ã€‚
 */
 //*********************************************************************************************
 
 
-void OLED_SET(void);	//³õÊ¼»¯
+void OLED_SET(void);	//åˆå§‹åŒ–
 
 
-void OLED_DisPlay_On(void);	//Æô¶¯ÆÁÄ»
-void OLED_DisPlay_Off(void);	//¹Ø±ÕÆÁÄ»
-void OLED_ColorTurn(u8 i);	//1=·´Ïà
-void OLED_DisplayTurn(u8 i);	//1=·´×ª180
-void OLED_Refresh(void);	//½«ÏÔ´æOLED_GRAMÊı¾İ°áµ½ÆÁÄ»ÉÏ
-void OLED_Clear(void);	//ÇåÆÁ
-void OLED_ClearRF(void);	//×¢Òâ£ºÎóÉ¾¡£Ö»Çå³ıOLED_GRAM£¬²»Refresh¡£
+void OLED_DisPlay_On(void);	//å¯åŠ¨å±å¹•
+void OLED_DisPlay_Off(void);	//å…³é—­å±å¹•
+void OLED_ColorTurn(u8 i);	//1=åç›¸
+void OLED_DisplayTurn(u8 i);	//1=åè½¬180
+void OLED_Refresh(void);	//å°†æ˜¾å­˜OLED_GRAMæ•°æ®æ¬åˆ°å±å¹•ä¸Š
+void OLED_Clear(void);	//æ¸…å±
+void OLED_ClearRF(void);	//æ³¨æ„ï¼šè¯¯åˆ ã€‚åªæ¸…é™¤OLED_GRAMï¼Œä¸Refreshã€‚
 
-void OLED_DrawPoint(u8 x, u8 y, u8 t);	//»­µã(x,y)£¬t=0ÊÇ²Áµôµã
+void OLED_DrawPoint(u8 x, u8 y, u8 t);	//ç”»ç‚¹(x,y)ï¼Œt=0æ˜¯æ“¦æ‰ç‚¹
 void OLED_DrawLineX(u8 x, u8 mode);
 void OLED_DrawLineY(u8 y, u8 mode);
-void OLED_DrawLine(u8 x1, u8 y1, u8 x2, u8 y2, u8 mode);	//»­Ïß(x1,y1)->(x2,y2)
-void OLED_DrawBoxLine(u8 x0, u8 y0, u8 x1, u8 y1, u8 mode);	//»­¿ò
-void OLED_DrawBoxXuLine(u8 x0, u8 y0, u8 x1, u8 y1, u8 linelong, u8 mode);	//ĞéÏß¿ò
-void OLED_DrawBox(u8 x0, u8 y0, u8 x1, u8 y1, u8 mode);	//»­¾Ø(ÊµĞÄ)
-void OLED_DrawCircle(u8 x, u8 y, u8 r, u8 mode);	//Ô²(x,y),r
+void OLED_DrawLine(u8 x1, u8 y1, u8 x2, u8 y2, u8 mode);	//ç”»çº¿(x1,y1)->(x2,y2)
+void OLED_DrawBoxLine(u8 x0, u8 y0, u8 x1, u8 y1, u8 mode);	//ç”»æ¡†
+void OLED_DrawBoxXuLine(u8 x0, u8 y0, u8 x1, u8 y1, u8 linelong, u8 mode);	//è™šçº¿æ¡†
+void OLED_DrawBox(u8 x0, u8 y0, u8 x1, u8 y1, u8 mode);	//ç”»çŸ©(å®å¿ƒ)
+void OLED_DrawCircle(u8 x, u8 y, u8 r, u8 mode);	//åœ†(x,y),r
 
-u8 StringLenX(u8 size, u8 num);	//×Ö·û´®³¤¶È
-void OLED_ShowChar(u8 x, u8 y, u8 chr, u8 size1, u8 mode);	//ÏÔÊ¾ÆÕÍ¨×Ö·û(x,y,±àºÅ,´óĞ¡,·´Ïà=0<0¾ÍÊÇĞ´ÉÏ0,1¾ÍÊÇĞ´ÉÏ1>)
-void OLED_ShowString(u8 x, u8 y, u8 *chr, u8 size1, u8 mode);	//ÏÔÊ¾×Ö·û´®
-void OLED_ShowNum(u8 x, u8 y, u32 num, u8 len, u8 size1, u8 mode);	//ÏÔÊ¾Êı×Ö(x,y,num,Î»Êı,´óĞ¡,·´Ïà=0)
+u8 StringLenX(u8 size, u8 num);	//å­—ç¬¦ä¸²é•¿åº¦
+void OLED_ShowChar(u8 x, u8 y, u8 chr, u8 size1, u8 mode);	//æ˜¾ç¤ºæ™®é€šå­—ç¬¦(x,y,ç¼–å·,å¤§å°,åç›¸=0<0å°±æ˜¯å†™ä¸Š0,1å°±æ˜¯å†™ä¸Š1>)
+void OLED_ShowString(u8 x, u8 y, u8 *chr, u8 size1, u8 mode);	//æ˜¾ç¤ºå­—ç¬¦ä¸²
+void OLED_ShowNum(u8 x, u8 y, u32 num, u8 len, u8 size1, u8 mode);	//æ˜¾ç¤ºæ•°å­—(x,y,num,ä½æ•°,å¤§å°,åç›¸=0)
 void OLED_ShowNumNoLen(u8 x, u8 y, u32 num, u8 size1, u8 mode);
-void OLED_ShowChinese(u8 x, u8 y, u8 num, u8 size1, u8 mode);	//ÖĞÎÄ
+void OLED_ShowChinese(u8 x, u8 y, u8 num, u8 size1, u8 mode);	//ä¸­æ–‡
 
-void OLED_ScrollDisplay(u8 num, u8 space, u8 mode);	//¹ö¶¯ÏÔÊ¾(ÖĞÎÄÊı£¬¼ä¸ô£¬·´Ïà)
-void OLED_ShowPicture(u8 x, u8 y, u8 sizex, u8 sizey, u8 BMP[], u8 mode);	//ÏÔÊ¾Î»Í¼(x,y,xÏò´óĞ¡,yÏò´óĞ¡,Í¼,·´Ïà)
+void OLED_ScrollDisplay(u8 num, u8 space, u8 mode);	//æ»šåŠ¨æ˜¾ç¤º(ä¸­æ–‡æ•°ï¼Œé—´éš”ï¼Œåç›¸)
+void OLED_ShowPicture(u8 x, u8 y, u8 sizex, u8 sizey, u8 BMP[], u8 mode);	//æ˜¾ç¤ºä½å›¾(x,y,xå‘å¤§å°,yå‘å¤§å°,å›¾,åç›¸)
 
 //*********************************************************************************************
 

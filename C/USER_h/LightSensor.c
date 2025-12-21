@@ -5,16 +5,16 @@ void Guangmin_PG_SET(void) {
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOG, ENABLE);
 
 	GPIO_InitStructure.GPIO_Pin = G_OUT0 | G_OUT1 | G_OUT2 | G_OUT3 | G_OUT4 | G_OUT5 | G_OUT6 | G_OUT7;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;      // ÉÏÀ­ÊäÈë
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;      // ä¸Šæ‹‰è¾“å…¥
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 
 	GPIO_Init(GPIOG, &GPIO_InitStructure);
 }
 
-uint8_t ReadOne(uint8_t pinNum) {   //Ö»¿´Ò»¸ö´«¸ĞÆ÷£¬Ö»readÒ»¸ö£¨one£©¡£pinNumÊÇÒı½ÅºÅÂë
+uint8_t ReadOne(uint8_t pinNum) {   //åªçœ‹ä¸€ä¸ªä¼ æ„Ÿå™¨ï¼Œåªreadä¸€ä¸ªï¼ˆoneï¼‰ã€‚pinNumæ˜¯å¼•è„šå·ç 
 	return GPIO_ReadInputDataBit(GPIOG, GPIO_Pin_0 << (pinNum + 8));
 }
 
 uint8_t ReadAll(void) {
-	return (uint8_t) ((GPIO_ReadInputData(GPIOG)>>8) & 0xFF);   //·µ»Ø8Î»µÄ¶ş½øÖÆ£¬²âµ½µÄÊÇ1£¨ºÚ£©£¬°×µÄÊÇ0
+	return (uint8_t) ((GPIO_ReadInputData(GPIOG)>>8) & 0xFF);   //è¿”å›8ä½çš„äºŒè¿›åˆ¶ï¼Œæµ‹åˆ°çš„æ˜¯1ï¼ˆé»‘ï¼‰ï¼Œç™½çš„æ˜¯0
 }

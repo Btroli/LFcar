@@ -8,7 +8,7 @@ void PWM_SET(void) {
 	PWM_PB_SET();
 }
 
-void PWM_PB_SET(void) {	//³õÊ¼»¯Òı½Å£¬ÉèÖÃÒı½ÅµÄ¹¦ÄÜ¡£
+void PWM_PB_SET(void) {	//åˆå§‹åŒ–å¼•è„šï¼Œè®¾ç½®å¼•è„šçš„åŠŸèƒ½ã€‚
 	GPIO_InitTypeDef GPIO_InitStructure;
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
 
@@ -25,59 +25,59 @@ void PWM_PB_SET(void) {	//³õÊ¼»¯Òı½Å£¬ÉèÖÃÒı½ÅµÄ¹¦ÄÜ¡£
 
 void pwm_int(void) {
 
-	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;       //¶¨Òå½á¹¹TIM_TimeBaseStructure
-	TIM_OCInitTypeDef  TIM_OCInitStructure;               //¶¨Òå½á¹¹TIM_OCInitStructure
+	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;       //å®šä¹‰ç»“æ„TIM_TimeBaseStructure
+	TIM_OCInitTypeDef  TIM_OCInitStructure;               //å®šä¹‰ç»“æ„TIM_OCInitStructure
 
 
-	//Ê¹ÄÜÊ±ÖÓ
+	//ä½¿èƒ½æ—¶é’Ÿ
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
 
 
-	//¶¨Ê±Æ÷»ù´¡ÅäÖÃ
-	TIM_TimeBaseStructure.TIM_Period = 7199;       // ARRÖµ
-	TIM_TimeBaseStructure.TIM_Prescaler = 0;       // ÎŞ·ÖÆµ
+	//å®šæ—¶å™¨åŸºç¡€é…ç½®
+	TIM_TimeBaseStructure.TIM_Period = 7199;       // ARRå€¼
+	TIM_TimeBaseStructure.TIM_Prescaler = 0;       // æ— åˆ†é¢‘
 	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
 
 	TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStructure);
 
 
-	//PWMÊä³öÅäÖÃ
+	//PWMè¾“å‡ºé…ç½®
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
 	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
-	TIM_OCInitStructure.TIM_Pulse = 0;  // ³õÊ¼Õ¼¿Õ±È0%
+	TIM_OCInitStructure.TIM_Pulse = 0;  // åˆå§‹å ç©ºæ¯”0%
 
-	//**//  Õ¼¿Õ±È = TIM_Pulse / £¨TIM_Period + 1£©
-	//**//  Set_PWMA ÖĞ (int PWM£©¼´ÎªÉèÖÃ TIM_Pulse
+	//**//  å ç©ºæ¯” = TIM_Pulse / ï¼ˆTIM_Period + 1ï¼‰
+	//**//  Set_PWMA ä¸­ (int PWMï¼‰å³ä¸ºè®¾ç½® TIM_Pulse
 
 
-	// ÅäÖÃÍ¨µÀ 1 (PB6) ºÍÍ¨µÀ 2 (PB7)
+	// é…ç½®é€šé“ 1 (PB6) å’Œé€šé“ 2 (PB7)
 	TIM_OC1Init(TIM4, &TIM_OCInitStructure);
 	TIM_OC2Init(TIM4, &TIM_OCInitStructure);
 
-	// ÆôÓÃÔ¤×°ÔØ
+	// å¯ç”¨é¢„è£…è½½
 	TIM_OC1PreloadConfig(TIM4, TIM_OCPreload_Enable);
 	TIM_OC2PreloadConfig(TIM4, TIM_OCPreload_Enable);
 
-	// Ê¹ÄÜÔ¤×°ÔØºÍ¶¨Ê±Æ÷
+	// ä½¿èƒ½é¢„è£…è½½å’Œå®šæ—¶å™¨
 	TIM_ARRPreloadConfig(TIM4, ENABLE);
 	TIM_CtrlPWMOutputs(TIM4, ENABLE);
 	TIM_Cmd(TIM4, ENABLE);
 }
 
 void Set_PWMA(int PWM) {
-	if (PWM < 0) {                    //Õı×ª£¨³µÇ°½ø£©
-		GPIO_SetBits(GPIOB, AIN2);	  // ¸ßµçÆ½
-		GPIO_ResetBits(GPIOB, AIN1);  // µÍµçÆ½
+	if (PWM < 0) {                    //æ­£è½¬ï¼ˆè½¦å‰è¿›ï¼‰
+		GPIO_SetBits(GPIOB, AIN2);	  // é«˜ç”µå¹³
+		GPIO_ResetBits(GPIOB, AIN1);  // ä½ç”µå¹³
 
-		TIM_SetCompare1(TIM4, -PWM);  //ÉèÖÃTIM4Í¨µÀ1µÄÕ¼¿Õ±È
-	} else {                          //·´×ª
-		GPIO_SetBits(GPIOB, AIN1);	  // ¸ßµçÆ½
-		GPIO_ResetBits(GPIOB, AIN2);  // µÍµçÆ½
+		TIM_SetCompare1(TIM4, -PWM);  //è®¾ç½®TIM4é€šé“1çš„å ç©ºæ¯”
+	} else {                          //åè½¬
+		GPIO_SetBits(GPIOB, AIN1);	  // é«˜ç”µå¹³
+		GPIO_ResetBits(GPIOB, AIN2);  // ä½ç”µå¹³
 
-		TIM_SetCompare1(TIM4, PWM);   //ÉèÖÃTIM4Í¨µÀ1µÄÕ¼¿Õ±È
+		TIM_SetCompare1(TIM4, PWM);   //è®¾ç½®TIM4é€šé“1çš„å ç©ºæ¯”
 	}
 }
 

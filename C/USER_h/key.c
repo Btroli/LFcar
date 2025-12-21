@@ -1,26 +1,26 @@
 #include "key.h"
 
 void KEY_SET(void) {
-	GPIO_InitTypeDef GPIO_InitStructure; //¶¨Òå½á¹¹Ìå
-	RCC_APB2PeriphClockCmd (KEY_CLK, ENABLE); 	//³õÊ¼»¯KEYÊ±ÖÓ
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);		// ¿ªÆôIO¿Ú¸´ÓÃÊ±ÖÓ
-//	GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);	//	½ûÓÃJTAG Ö»Ê¹ÓÃSWD	£¬²»È»PA15¡¢PB3¡¢PB4ÎŞ·¨Õı³£Ê¹ÓÃ
+	GPIO_InitTypeDef GPIO_InitStructure; //å®šä¹‰ç»“æ„ä½“
+	RCC_APB2PeriphClockCmd (KEY_CLK, ENABLE); 	//åˆå§‹åŒ–KEYæ—¶é’Ÿ
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);		// å¼€å¯IOå£å¤ç”¨æ—¶é’Ÿ
+//	GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);	//	ç¦ç”¨JTAG åªä½¿ç”¨SWD	ï¼Œä¸ç„¶PA15ã€PB3ã€PB4æ— æ³•æ­£å¸¸ä½¿ç”¨
 
 	GPIO_InitStructure.GPIO_Pin = KEY_PIN1 | KEY_PIN2 | KEY_PIN3 | KEY_PIN4;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz; //ËÙ¶ÈÑ¡Ôñ
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz; //é€Ÿåº¦é€‰æ‹©
 	GPIO_Init(KEY_PORT, &GPIO_InitStructure);
 
 }
 
 uint8_t	KEY_Scan(uint8_t pin) {
-	pin = 5 - pin;	//½«Ë³Ğò·´×ª£¬°´Å¥°å·´×°¡£
-	pin = (1 << (pin + 3));	//´Ópin1µ½pin4
-	if ( GPIO_ReadInputDataBit ( KEY_PORT, pin) == 0 ) {	//¼ì²â°´¼üÊÇ·ñ±»°´ÏÂ
-		delay_ms(10);	//ÑÓÊ±Ïû¶¶
-		if (GPIO_ReadInputDataBit ( KEY_PORT, pin) == 0) {	//ÔÙ´Î¼ì²âÊÇ·ñÎªµÍµçÆ½
-			while (GPIO_ReadInputDataBit ( KEY_PORT, pin) == 0);	//µÈ´ı°´¼ü·Å¿ª
-			return KEY_ON;	//·µ»Ø°´¼ü°´ÏÂ±êÖ¾
+	pin = 5 - pin;	//å°†é¡ºåºåè½¬ï¼ŒæŒ‰é’®æ¿åè£…ã€‚
+	pin = (1 << (pin + 3));	//ä»pin1åˆ°pin4
+	if ( GPIO_ReadInputDataBit ( KEY_PORT, pin) == 0 ) {	//æ£€æµ‹æŒ‰é”®æ˜¯å¦è¢«æŒ‰ä¸‹
+		delay_ms(10);	//å»¶æ—¶æ¶ˆæŠ–
+		if (GPIO_ReadInputDataBit ( KEY_PORT, pin) == 0) {	//å†æ¬¡æ£€æµ‹æ˜¯å¦ä¸ºä½ç”µå¹³
+			while (GPIO_ReadInputDataBit ( KEY_PORT, pin) == 0);	//ç­‰å¾…æŒ‰é”®æ”¾å¼€
+			return KEY_ON;	//è¿”å›æŒ‰é”®æŒ‰ä¸‹æ ‡å¿—
 		}
 	}
 	return KEY_OFF;
@@ -32,7 +32,7 @@ uint8_t	KEY_Scan(uint8_t pin) {
 }
 
 uint8_t	KEY_ScanNF(uint8_t pin) {
-	pin = 5 - pin;	//½«Ë³Ğò·´×ª£¬°´Å¥°å·´×°¡£
+	pin = 5 - pin;	//å°†é¡ºåºåè½¬ï¼ŒæŒ‰é’®æ¿åè£…ã€‚
 	pin = (1 << (pin + 3));
 	if ( GPIO_ReadInputDataBit ( KEY_PORT, pin) == 0 ) {
 		delay_ms(10);

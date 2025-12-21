@@ -12,7 +12,7 @@
 #define G_OUT6    GPIO_Pin_14
 #define G_OUT7    GPIO_Pin_15
 
-void Guangmin_PG_SET(void);	//³õÊ¼»¯º¯Êı
+void Guangmin_PG_SET(void);	//åˆå§‹åŒ–å‡½æ•°
 
 uint8_t ReadOne(uint8_t pinNum);
 uint8_t ReadAll(void);

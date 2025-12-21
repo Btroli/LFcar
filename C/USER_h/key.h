@@ -13,11 +13,11 @@
 #define KEY_PIN4	GPIO_Pin_7
 
 #define KEY_PORT	GPIOG
-#define KEY_CLK		RCC_APB2Periph_GPIOG	//端口时钟
+#define KEY_CLK		RCC_APB2Periph_GPIOG	//绔彛鏃堕挓
 
-void 	KEY_SET(void);		//按键IO口初始化函数
-uint8_t	KEY_Scan(uint8_t pin);		//按键扫描
-uint8_t	KEY_ScanNF(uint8_t pin);	//按键扫描,不用等待放开
+void 	KEY_SET(void);		//鎸夐敭IO鍙ｅ垵濮嬪寲鍑芥暟
+uint8_t	KEY_Scan(uint8_t pin);		//鎸夐敭鎵弿
+uint8_t	KEY_ScanNF(uint8_t pin);	//鎸夐敭鎵弿,涓嶇敤绛夊緟鏀惧紑
 
 #endif	//__KEY_H
 

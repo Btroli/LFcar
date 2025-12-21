@@ -22,14 +22,14 @@ uint8_t count = 1, area = 0, option = 0, option_NUM = 10, sel_flag = 1, car_scre
 
 uint8_t loop_car_delaytime = 10;
 
-//¾àÀë
+//è·ç¦»
 uint32_t distance = 0, distance_now = 0, distance_pj = 0;
 
 //TIM
 volatile uint32_t Stime;
 volatile int16_t EvalueA = 0, EvalueB = 0;
 
-//pid0 ¸ø¶¨Öµ
+//pid0 ç»™å®šå€¼
 int16_t GA = 40, GB = 40;
 
 //pid1

@@ -8,25 +8,25 @@ void Button_SET(void) {
 	EXTI_InitTypeDef EXTI_InitStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
 
-	//  πƒ‹PG + AFIO ±÷”
+	// ‰ΩøËÉΩPG + AFIOÊó∂Èíü
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOG | RCC_APB2Periph_AFIO, ENABLE);
 
-	// ≈‰÷√PG8 - 11
+	// ÈÖçÁΩÆPG8 - 11
 	GPIO_InitStructure.GPIO_Pin = BUTTON1 | BUTTON2 | BUTTON3 | BUTTON4;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; // …œ¿≠ ‰»Î
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; // ‰∏äÊãâËæìÂÖ•
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOG, & GPIO_InitStructure);
 
-	// ¡¨Ω”EXTI
+	// ËøûÊé•EXTI
 	GPIO_EXTILineConfig(GPIO_PortSourceGPIOG, GPIO_PinSource0);
 	GPIO_EXTILineConfig(GPIO_PortSourceGPIOG, GPIO_PinSource1);
 	GPIO_EXTILineConfig(GPIO_PortSourceGPIOG, GPIO_PinSource2);
 	GPIO_EXTILineConfig(GPIO_PortSourceGPIOG, GPIO_PinSource3);
 
-	// ≈‰÷√EXTI
+	// ÈÖçÁΩÆEXTI
 	EXTI_InitStructure.EXTI_Line = EXTI_Line0;
 	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling; // œ¬Ωµ—ÿ¥•∑¢
+	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling; // ‰∏ãÈôçÊ≤øËß¶Âèë
 	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
 	EXTI_Init(& EXTI_InitStructure);
 
@@ -39,7 +39,7 @@ void Button_SET(void) {
 	EXTI_InitStructure.EXTI_Line = EXTI_Line3;
 	EXTI_Init(& EXTI_InitStructure);
 
-	// ≈‰÷√NVIC
+	// ÈÖçÁΩÆNVIC
 	NVIC_InitStructure.NVIC_IRQChannel = EXTI0_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x02;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x02;
@@ -56,13 +56,13 @@ void Button_SET(void) {
 	NVIC_Init(& NVIC_InitStructure);
 }
 
-// ÷–∂œ∫Ø ˝
+// ‰∏≠Êñ≠ÂáΩÊï∞
 
 //void EXTI0_IRQHandler(void) {
 //	if (EXTI_GetITStatus(EXTI_Line0) != RESET) {
-//		EXTI_ClearITPendingBit(EXTI_Line0);	// «Â≥˝÷–∂œ±Í÷æ
+//		EXTI_ClearITPendingBit(EXTI_Line0);	// Ê∏ÖÈô§‰∏≠Êñ≠Ê†áÂøó
 //		n++;
-//		delay_ms(20);	//∑¿∂∂—” ±
+//		delay_ms(20);	//Èò≤ÊäñÂª∂Êó∂
 //	}
 //}
 //void EXTI1_IRQHandler(void) {
