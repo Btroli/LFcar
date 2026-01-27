@@ -87,10 +87,12 @@ void TIM7_IRQHandler(void) {
 
 		//每20us中断一次
 		//capture_done = 3 -> 2 , 延时20us
+		//#define CSB capture_done = n
+		//trig高脉冲时间=(n-2)*tim7周期
 
-		if (capture_done-- > 1) {
-			if (capture_done == 1) {
-				capture_done--;
+		if (capture_done > 1) {
+			if (capture_done-- == 2) {
+				capture_done = 0;
 				TRIG_LOW;
 			}
 			TRIG_HIGH;

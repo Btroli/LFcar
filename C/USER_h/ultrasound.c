@@ -1,7 +1,7 @@
 #include "ultrasound.h"
 
 volatile int8_t  capture_done = 1;
-volatile uint16_t  time = 0xFFFF;
+volatile uint16_t  echotime = 0xFFFF;
 
 void SET_TRIG_and_ECHO(void);
 void TIM5_init(void);
@@ -67,7 +67,7 @@ void TIM5_IRQHandler(void) {
 		TIM_ClearITPendingBit(TIM5, TIM_IT_CC4);	//清除标志
 
 		if (TIM5->CCER & TIM_CCER_CC4P) {	//如果是下降沿捕获
-			time = TIM5->CCR4;	//捕获
+			echotime = TIM5->CCR4;	//捕获
 			TIM5->CCER &= ~TIM_CCER_CC4P;	//切换回上升沿
 			capture_done = 1;	//标记测量完成
 		} else {	//如果是上升沿捕获
@@ -79,13 +79,13 @@ void TIM5_IRQHandler(void) {
 	if (TIM_GetITStatus(TIM5, TIM_IT_Update) != RESET) {
 		TIM_ClearITPendingBit(TIM5, TIM_IT_Update);
 		if (capture_done == -1) {
-			time = 0xFFFF;
+			echotime = 0xFFFF;
 			capture_done = 1;
 		}
 	}
 }
 
 float ultrasound_distance(void) {
-	return time * 0.017;
+	return echotime * 0.017;
 }
 

@@ -11,7 +11,7 @@
 #define TRIG_TOGGLE	{GPIOA->ODR ^= TRIG;}
 
 extern volatile int8_t  capture_done;
-extern volatile uint16_t  time;
+extern volatile uint16_t  echotime;
 
 #define CSB capture_done=3
 /*

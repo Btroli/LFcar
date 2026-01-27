@@ -46,7 +46,11 @@ uint8_t quan = 0;
 volatile uint32_t Stime_bian = 0xFFFFFFFF + 1 - 200;	//2^32 - 200
 
 //bizhang
-uint8_t csb_flag = 1;
+uint8_t csb_flag = 0;
+uint16_t pre_time[10] = {0xFFFF};
+
+//通用临时变量i
+uint8_t i = 0;
 
 
 uint8_t value[10][value_len] = {
@@ -58,7 +62,7 @@ uint8_t value[10][value_len] = {
 	{0, 1, 0, 0, 0, 0, 0, 0, 0, 2},	//5
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//6
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//7
-	{0, 1, 0, 0, 0, 0, 0, 0, 0, 5},	//8
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//8
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//9
 };
 
@@ -137,15 +141,81 @@ int main(void) {
 }
 
 /********************************************/
+//uint8_t csbtime(void) {
+//	for (i = 0; i < 3+1; i++)
+//		if (pre_time[i] > 1800)
+//			return 0;
+//	return 1;
+//}
 void loop_car_bz(void) {
-	OLED_ShowString(6, 12, "time", 12, 1);
-	OLED_ShowString(70, 12, "distance", 12, 1);
-	OLED_ShowNumNoLen(6, 12 + 10, time, 12, 1);
-	OLED_ShowNumNoLen(70, 12 + 10, ultrasound_distance(), 12, 1);
-	OLED_Refresh();
-	OLED_ClearRF();
+
+	ReadNow = ReadAll();
+
+	//for (i = 3; i > 0; i--)
+	//	pre_time[i] = pre_time[i - 1];
+	//pre_time[0] = echotime;
+
+	//if (csbtime()) {
+	if (echotime < 1400) {
+		sum_PA = 0;
+		sum_PB = 0;
+		if (csb_flag == 1) {
+			GA = 0;
+			GB = 60;
+		} else {
+			GA = 60;
+			GB = 0;
+		}
+
+		while (ReadAll()) {
+			pid0();
+			delay_ms(loop_car_delaytime);
+		}
+
+		if (csb_flag == 1) {
+			GA = 25;
+			GB = 18;
+		} else {
+			GA = 18;
+			GB = 25;
+		}
+		i = 0;
+		while (!ReadAll()) {
+			pid0();
+			delay_ms(loop_car_delaytime);
+			i++;
+			if (!(i % 2) && i < 2 * 12) {
+				if (csb_flag == 1)
+					GA++;
+				else
+					GB++;
+			}
+		}
+
+		echotime = 0xFFFF;
+		ReadNow = ReadAll();
+		LastRead = ReadNow;
+
+	} else if (ReadNow) {
+		pid1();
+		LastRead = ReadNow;
+	} else {
+		sum_PA = 0;
+		sum_PB = 0;
+
+		if (LastRead & LEFT) {
+			GA = 0;
+			GB = 60;
+			csb_flag = 1;
+		} else if (LastRead & RIGHT) {
+			GA = 60;
+			GB = 0;
+			csb_flag = 2;
+		}
+	}
 
 	CSB;
+	pid0();
 	delay_ms(loop_car_delaytime);
 }
 
@@ -171,7 +241,7 @@ void loop_car(void) {
 
 	pid0();
 
-	delay_ms(300);
+	delay_ms(loop_car_delaytime);
 }
 
 void loop_car_quan(void) {
@@ -243,7 +313,7 @@ void pid1(void) {
 
 	Er = 0;
 
-	for (uint8_t i = 0; i < 8; i++)
+	for (i = 0; i < 8; i++)
 		if (ReadNow & (1 << i))
 			Er += jq[i];
 
@@ -271,7 +341,7 @@ void pidInit_1(void) {
 
 	quan = value[4][0] * 100 + value[4][1] * 10 + value[4][2];
 
-	csb_flag = value[4][0] * 10 + value[4][1];
+	csb_flag = value[5][0] * 10 + value[5][1];
 
 	Er = 0;
 	pre_Er = 0;
