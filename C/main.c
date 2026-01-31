@@ -10,6 +10,8 @@
 #include "ultrasound.h"
 #include "LightSensor.h"
 
+#include "math.h"
+
 /********************************************/
 #define	SCL		GPIO_Pin_8
 #define	SDA		GPIO_Pin_9
@@ -18,6 +20,9 @@
 static float ax, ay, az, gx, gy, gz, temperature;
 /********************************************/
 static float yaw, pitch, roll;
+/********************************************/
+float cy, sy, cp, sp, cr, sr;
+int8_t test_x, test_y;
 /********************************************/
 
 void I2C_SET(void) {
@@ -126,18 +131,80 @@ void MPU6050_update(void) {
 	temperature = temperature_raw / 340 + 36.53;
 }
 /********************************************/
+void ypr(void) {
+	cy = cosf(yaw),   sy = sinf(yaw);
+	cp = cosf(pitch), sp = sinf(pitch);
+	cr = cosf(roll),  sr = sinf(roll);
+}
+
+void euler(float a, float b, float c) {
+	float x_rot = a * (cp * cy) + b * (-cp * sy) + c * (sp);
+	float y_rot = a * (sr * sp * cy + cr * sy) +
+	              b * (-sr * sp * sy + cr * cy) +
+	              c * (-sr * cp);
+
+	const float scale = 23.0f;
+
+	test_x = (int8_t)(x_rot * scale);
+	test_y = (int8_t)(-y_rot * scale);
+}
+
+void cle(uint8_t x, uint8_t y) {
+	OLED_DrawPoint(x - 1, y - 1, 1);
+	OLED_DrawPoint(x - 1, y, 1);
+	OLED_DrawPoint(x - 1, y + 1, 1);
+	OLED_DrawPoint(x, y - 1, 1);
+	OLED_DrawPoint(x, y + 1, 1);
+	OLED_DrawPoint(x + 1, y - 1, 1);
+	OLED_DrawPoint(x + 1, y, 1);
+	OLED_DrawPoint(x + 1, y + 1, 1);
+
+	//OLED_DrawPoint(x + 2, y, 1);
+	//OLED_DrawPoint(x - 2, y, 1);
+	//OLED_DrawPoint(x, y + 2, 1);
+	//OLED_DrawPoint(x, y - 2, 1);
+
+	OLED_DrawPoint(x, y, 0);
+}
+
+void line_oi(int8_t x, int8_t y) {
+	x += 63;
+	//y = -y;
+	y += 31;
+	OLED_DrawLine(126 - x, 62 - y, x, y, 1);
+	cle(x, y);
+}
+
+void line_o(int8_t x, int8_t y) {
+	x += 63;
+	y = -y;
+	y += 31;
+	OLED_DrawLine(63, 31, x, y, 1);
+	cle(x, y);
+}
 
 void loop(void) {
-	yaw += gz * 0.05;
-	pitch += gy * 0.05;
-	roll += gx * 0.05;
 
-	OLED_ShowNumNoLen(6, 12 + 10 * 0, yaw, 12, 1);
-	OLED_ShowNumNoLen(6, 12 + 10 * 1, pitch, 12, 1);
-	OLED_ShowNumNoLen(6, 12 + 10 * 2, roll, 12, 1);
+	//拿于手
+	//yaw += gz * 0.002;
+	//pitch += gy * 0.002;
+	//roll += gx * 0.002;
+
+	//嵌于车
+	yaw -= gz * 0.002;
+	pitch -= gy * 0.002;
+	roll -= gx * 0.002;
+
+	ypr();
+	euler(0, 0, 1);
+	line_oi(test_x, test_y);
+	euler(0, 1, 0);
+	line_oi(test_x, test_y);
+	euler(1, 0, 0);
+	line_oi(test_x, test_y);
+
 	OLED_Refresh();
 	OLED_ClearRF();
-
 	MPU6050_update();
 	delay_ms(100);
 
@@ -148,20 +215,22 @@ void loop(void) {
 	}
 }
 
+/********************************************/
+
 int main(void) {
 
 	SystemInit();
 	delay_init();
 	KEY_SET();
-	PWM_SET();
+	//PWM_SET();
 	OLED_SET();
-	Encoder_PA_SET();
-	UltraSound_SET();
-	Guangmin_PG_SET();
+	//Encoder_PA_SET();
+	//UltraSound_SET();
+	//Guangmin_PG_SET();
 	//TIM67_SET(&EvalueA, &EvalueB, &Stime);
 
-	LOW(STBY);
-	TRIG_LOW;
+	//LOW(STBY);
+	//TRIG_LOW;
 
 	OLED_Refresh();
 	delay_ms(1000);
