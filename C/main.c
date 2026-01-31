@@ -63,16 +63,9 @@ static uint8_t reg_read(uint8_t reg) {
 	return receive_value;
 }
 
-/*
-static uint8_t reg_readmore(void) {
-	My_I2C_SendBytes(I2C1, 0xd0, &reg, 1);
-	uint8_t receive_value;
-
-	My_I2C_ReceiveBytes(I2C1, 0xd0, &receive_value, 1);
-
-	return receive_value;
+static uint8_t reg_readmore(uint8_t *buffer) {
+	return My_I2C_ReadBurst(I2C1, 0xd0, 0x3b, buffer, 14);
 }
-*/
 
 void MPU6050_SET(void) {
 	I2C_SET();
@@ -89,7 +82,7 @@ void MPU6050_SET(void) {
 }
 
 void MPU6050_update(void) {
-	/* 版本一 */
+	/* 版本一
 
 	int16_t ax_raw = (int16_t)((reg_read(0x3b) << 8) + reg_read(0x3c));
 	int16_t ay_raw = (int16_t)((reg_read(0x3d) << 8) + reg_read(0x3e));
@@ -107,9 +100,28 @@ void MPU6050_update(void) {
 	gz = gz_raw * 6.1035e-2f;
 	temperature = temperature_raw / 340 + 36.53;
 
-	/**/
+	*/
 
+	/* 版本二：连续读取 */
+	uint8_t value[14];
 
+	reg_readmore(value);
+
+	int16_t ax_raw = (int16_t)((value[0] << 8) + value[1]);
+	int16_t ay_raw = (int16_t)((value[2] << 8) + value[3]);
+	int16_t az_raw = (int16_t)((value[4] << 8) + value[5]);
+	int16_t temperature_raw = (int16_t)((value[6] << 8) + value[7]);
+	int16_t gx_raw = (int16_t)((value[8] << 8) + value[9]);
+	int16_t gy_raw = (int16_t)((value[10] << 8) + value[11]);
+	int16_t gz_raw = (int16_t)((value[12] << 8) + value[13]);
+
+	ax = ax_raw * 6.1035e-5f;
+	ay = ay_raw * 6.1035e-5f;
+	az = az_raw * 6.1035e-5f;
+	gx = gx_raw * 6.1035e-2f;
+	gy = gy_raw * 6.1035e-2f;
+	gz = gz_raw * 6.1035e-2f;
+	temperature = temperature_raw / 340 + 36.53;
 }
 /********************************************/
 
