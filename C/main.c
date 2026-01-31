@@ -1,104 +1,129 @@
 #include "stm32f10x.h"
+#include "i2c.h"
 #include "key.h"
 #include "pwm.h"
 #include "tim.h"
-#include "mmgj.h"
+//#include "mmgj.h"
 #include "oled.h"
 #include "delay.h"
-//#include "button.h"
 #include "encoder.h"
 #include "ultrasound.h"
 #include "LightSensor.h"
 
 /********************************************/
-
-#define LEFT	0b11100000
-#define MID 	0b00011000
-#define RIGHT	0b00000111
-
-#define value_len 10
-
-uint8_t count = 1, area = 0, option = 0, option_NUM = 10, sel_flag = 1, car_screen_flag = 0, value_num = 0;
-
-uint8_t loop_car_delaytime = 10;
-
-//距离
-uint32_t distance = 0, distance_now = 0, distance_pj = 0;
-
-//TIM
-volatile uint32_t Stime;
-volatile int16_t EvalueA = 0, EvalueB = 0;
-
-//pid0 给定值
-int16_t GA = 40, GB = 40;
-
-//pid1
-uint8_t ReadNow, LastRead;
-float LKp, LKi, LKd;
-int8_t Er, pre_Er;
-int16_t sum_Er;
-static const int8_t jq[8] = {25, 20, 12, 5, -5, -12, -20, -25};
-uint8_t GAB;
-
-//stop
-uint8_t bian = 0, bian_pre = 0, bian_flag = 1;
-uint8_t quan = 0;
-volatile uint32_t Stime_bian = 0xFFFFFFFF + 1 - 200;	//2^32 - 200
-
-//bizhang
-uint8_t csb_flag = 0;
-uint16_t pre_time[10] = {0xFFFF};
-
-//通用临时变量i
-uint8_t i = 0;
-
-
-uint8_t value[10][value_len] = {
-	{0, 3, 8, 0, 0, 0, 0, 0, 0, 3},	//0
-	{0, 0, 0, 0, 6, 0, 0, 0, 0, 3},	//1
-	{0, 6, 6, 0, 0, 0, 0, 0, 0, 3},	//2
-	{3, 0, 0, 0, 0, 0, 0, 0, 0, 2},	//3
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 3},	//4
-	{0, 1, 0, 0, 0, 0, 0, 0, 0, 2},	//5
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//6
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//7
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//8
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//9
-};
-
-uint8_t name[10][10] = {
-	"LKp",	//0
-	"LKi",	//1
-	"LKd",	//2
-	"GAB",	//3
-	"quan",	//4
-	"BiZhang",	//5
-	"name6",	//6
-	"name7",	//7
-	"name8",	//8
-	"distance",	//9
-};
-
+#define	SCL		GPIO_Pin_8
+#define	SDA		GPIO_Pin_9
+#define	I2C_PORT	GPIOB
+/********************************************/
+float ax, ay, az, gx, gy, gz, temperature;
 /********************************************/
 
-//void loop_screen0(void);
-//void loop_screen1(void);
-void loop_car(void);
-void loop_car_quan(void);
+void I2C_SET(void) {
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
+	GPIO_PinRemapConfig(GPIO_Remap_I2C1, ENABLE);
+	//RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, DISABLE);	//关闭时钟
+	/*
+	 * AFIO：复用功能IO控制器，与GPIO并列。
+	 * 重映射寄存器相当于一个触发器，只有时钟信号的时候才能改变状态，所以需要打开AFIO时钟。
+	 * 这里是将I2C默认的PB6,7改道(重映射)至PB8,9。（I2C1只有两个可能）
+	 * 开了AFIO时钟后，通常不关，不知道为什么，反正通常不关。
+	 */
 
-void loop_car_bz(void);
+	//PB8,9
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+	GPIO_InitTypeDef GPIO_InitStructure;
+	GPIO_InitStructure.GPIO_Pin = SCL | SDA;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_OD;	//开漏复用输出模式
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
 
-void pidInit(void);
+	//I2C1 初始化，格式同上。
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1, ENABLE);
+	I2C_InitTypeDef I2C_InitStructure;
+	I2C_InitStructure.I2C_ClockSpeed = 400000;	//通信速度：400k，见于6050规格书
+	I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_2;	//占空比：1/2
+	I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
+	I2C_Init(I2C1, &I2C_InitStructure);
+	//I2C_Cmd(I2C1, ENABLE);	//使能I2C1
+}
 
-void pidInit_1(void);
+//写入value值 于 寄存器reg
+static void reg_write(uint8_t reg, uint8_t value) {
+	uint8_t send_value[] = {reg, value};
+	My_I2C_SendBytes(I2C1, 0xd0, send_value, 2);
+}
 
-void pid0(void);
-void pid1(void);
+//读取值 从 寄存器reg
+static uint8_t reg_read(uint8_t reg) {
+	My_I2C_SendBytes(I2C1, 0xd0, &reg, 1);
+	uint8_t receive_value;
 
-void Quan0(void);
-void Quan1(void);
+	My_I2C_ReceiveBytes(I2C1, 0xd0, &receive_value, 1);
 
+	return receive_value;
+}
+
+/*
+static uint8_t reg_readmore(void) {
+	My_I2C_SendBytes(I2C1, 0xd0, &reg, 1);
+	uint8_t receive_value;
+
+	My_I2C_ReceiveBytes(I2C1, 0xd0, &receive_value, 1);
+
+	return receive_value;
+}
+*/
+
+void MPU6050_SET(void) {
+	I2C_SET();
+
+	reg_write(0x6b, 0x80);	//复位
+	delay_ms(100);
+
+	reg_write(0x6b, 0x00);	//关闭睡眠模式
+
+	reg_write(0x1b, 0x18);	//陀螺仪量程 = +-2000 (度/s)
+	reg_write(0x1c, 0x00);	//加速度计量程 = +-2 (g)
+	//注：陀螺仪量程最大挡位精度低，可能不合适。
+	//加速度计最低挡位，应该足够。
+}
+
+void MPU6050_update(void) {
+	/* 版本一 */
+
+	int16_t ax_raw = (int16_t)((reg_read(0x3b) << 8) + reg_read(0x3c));
+	int16_t ay_raw = (int16_t)((reg_read(0x3d) << 8) + reg_read(0x3e));
+	int16_t az_raw = (int16_t)((reg_read(0x3f) << 8) + reg_read(0x40));
+	int16_t temperature_raw = (int16_t)((reg_read(0x41) << 8) + reg_read(0x42));
+	int16_t gx_raw = (int16_t)((reg_read(0x43) << 8) + reg_read(0x44));
+	int16_t gy_raw = (int16_t)((reg_read(0x45) << 8) + reg_read(0x46));
+	int16_t gz_raw = (int16_t)((reg_read(0x47) << 8) + reg_read(0x48));
+
+	ax = ax_raw * 6.1035e-5f;
+	ay = ay_raw * 6.1035e-5f;
+	az = az_raw * 6.1035e-5f;
+	gx = gx_raw * 6.1035e-2f;
+	gy = gy_raw * 6.1035e-2f;
+	gz = gz_raw * 6.1035e-2f;
+	temperature = temperature_raw / 340 + 36.53;
+
+	/**/
+
+
+}
 /********************************************/
+
+void loop(void) {
+	MPU6050_update();
+	delay_ms(100);
+	OLED_ShowNumNoLen(6, 12 + 10 * 0, ax * 1000, 12, 1);
+	OLED_ShowNumNoLen(6, 12 + 10 * 1, ay * 1000, 12, 1);
+	OLED_ShowNumNoLen(6, 12 + 10 * 2, az * 1000, 12, 1);
+	OLED_ShowNumNoLen(6, 12 + 10 * 3, temperature, 12, 1);
+	OLED_Refresh();
+	OLED_ClearRF();
+	delay_ms(100);
+}
 
 int main(void) {
 
@@ -107,11 +132,10 @@ int main(void) {
 	KEY_SET();
 	PWM_SET();
 	OLED_SET();
-//	Button_SET();
 	Encoder_PA_SET();
 	UltraSound_SET();
 	Guangmin_PG_SET();
-	TIM67_SET(&EvalueA, &EvalueB, &Stime);
+	//TIM67_SET(&EvalueA, &EvalueB, &Stime);
 
 	LOW(STBY);
 	TRIG_LOW;
@@ -119,232 +143,8 @@ int main(void) {
 	OLED_Refresh();
 	delay_ms(1000);
 
-	while (1) {
-		if (car_screen_flag) {
-			count = 1 - count;
-			if (sel_flag)
-				loop_screen0();
-			else
-				loop_screen1();
-			delay_ms(200);
-			Set_PWMA(0);
-			Set_PWMB(0);
-		} else {
-			if (quan)
-				loop_car_quan();
-			else if (csb_flag)
-				loop_car_bz();
-			else
-				loop_car();
-		}
-	}
-}
 
-/********************************************/
-//uint8_t csbtime(void) {
-//	for (i = 0; i < 3+1; i++)
-//		if (pre_time[i] > 1800)
-//			return 0;
-//	return 1;
-//}
-void loop_car_bz(void) {
-
-	ReadNow = ReadAll();
-
-	//for (i = 3; i > 0; i--)
-	//	pre_time[i] = pre_time[i - 1];
-	//pre_time[0] = echotime;
-
-	//if (csbtime()) {
-	if (echotime < 1400) {
-		sum_PA = 0;
-		sum_PB = 0;
-		if (csb_flag == 1) {
-			GA = 0;
-			GB = 60;
-		} else {
-			GA = 60;
-			GB = 0;
-		}
-
-		while (ReadAll()) {
-			pid0();
-			delay_ms(loop_car_delaytime);
-		}
-
-		if (csb_flag == 1) {
-			GA = 25;
-			GB = 18;
-		} else {
-			GA = 18;
-			GB = 25;
-		}
-		i = 0;
-		while (!ReadAll()) {
-			pid0();
-			delay_ms(loop_car_delaytime);
-			i++;
-			if (!(i % 2) && i < 2 * 12) {
-				if (csb_flag == 1)
-					GA++;
-				else
-					GB++;
-			}
-		}
-
-		echotime = 0xFFFF;
-		ReadNow = ReadAll();
-		LastRead = ReadNow;
-
-	} else if (ReadNow) {
-		pid1();
-		LastRead = ReadNow;
-	} else {
-		sum_PA = 0;
-		sum_PB = 0;
-
-		if (LastRead & LEFT) {
-			GA = 0;
-			GB = 60;
-			csb_flag = 1;
-		} else if (LastRead & RIGHT) {
-			GA = 60;
-			GB = 0;
-			csb_flag = 2;
-		}
-	}
-
-	CSB;
-	pid0();
-	delay_ms(loop_car_delaytime);
-}
-
-void loop_car(void) {
-
-	ReadNow = ReadAll();
-
-	if (ReadNow) {
-		pid1();
-		LastRead = ReadNow;
-	} else {
-		sum_PA = 0;
-		sum_PB = 0;
-
-		if (LastRead & LEFT) {
-			GA = 0;
-			GB = 60;
-		} else if (LastRead & RIGHT) {
-			GA = 60;
-			GB = 0;
-		}
-	}
-
-	pid0();
-
-	delay_ms(loop_car_delaytime);
-}
-
-void loop_car_quan(void) {
-
-	ReadNow = ReadAll();
-
-	if (ReadNow) {
-		pid1();
-		LastRead = ReadNow;
-		bian_flag = 1;
-	} else {
-		if (LastRead & LEFT) {
-			GA = 0;
-			GB = 60;
-		} else if (LastRead & RIGHT) {
-			GA = 60;
-			GB = 0;
-		}
-		sum_PA = 0;
-		sum_PB = 0;
-
-		if (bian_flag && Stime - Stime_bian >= 200) {
-			bian++;
-			Stime_bian = Stime;
-		}
-		bian_flag = 0;
-	}
-
-	pid0();
-
-	delay_ms(loop_car_delaytime);
-
-	distance_now += EcdSpeed[(EvalueA + EvalueB) / 2];
-
-	if (bian != bian_pre) {
-		bian_pre = bian;
-
-		if (bian == 1)
-			distance = distance_now;
-		else if (bian == 4 * quan) {
-			distance_pj += distance_now;
-			distance_pj /= (4 * quan - 1);
-			distance = distance_pj - distance;
-		} else
-			distance_pj += distance_now;
-		distance_now = 0;
-	}
-
-	if (bian == 4 * quan)
-		if (distance_now >= distance) {
-			LOW(STBY);
-			while (1)
-				if (KEY_Scan(4)) {
-					car_screen_flag = 1;
-					bian = 0;
-					bian_pre = 0;
-					bian_flag = 1;
-					quan = 8;
-					Stime_bian = 0xFFFFFFFF + 1 - 200;
-					Stime = 0;
-					return;
-				}
-		}
-}
-
-void pid1(void) {
-
-	pre_Er = Er;
-
-	Er = 0;
-
-	for (i = 0; i < 8; i++)
-		if (ReadNow & (1 << i))
-			Er += jq[i];
-
-	if (sum_Er < GAB * 100 && sum_Er > GAB * -100)
-		sum_Er += Er;
-
-	GB = LKp * Er + LKi * sum_Er + LKd * (Er - pre_Er);
-	GB /= 200;
-
-	GA = GAB + GB;
-	GB = GAB - GB;
-
-	GA = (-20 < GA && GA < 70) ? GA : ((GA < 0) ? -20 : 70);
-	GB = (-20 < GB && GB < 70) ? GB : ((GB < 0) ? -20 : 70);
-
-}
-void pidInit_1(void) {
-	LKp = value[0][0] * 100 + value[0][1] * 10 + value[0][2];
-
-	LKi = cal_value(value[1]);
-
-	LKd = value[2][0] * 100 + value[2][1] * 10 + value[2][2];
-
-	GAB = value[3][0] * 10 + value[3][1];
-
-	quan = value[4][0] * 100 + value[4][1] * 10 + value[4][2];
-
-	csb_flag = value[5][0] * 10 + value[5][1];
-
-	Er = 0;
-	pre_Er = 0;
-	sum_Er = 0;
-
+	MPU6050_SET();
+	while (1)
+		loop();
 }

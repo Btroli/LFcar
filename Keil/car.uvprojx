@@ -580,11 +580,6 @@
               <FilePath>..\C\USER_h\key.c</FilePath>
             </File>
             <File>
-              <FileName>mmgj.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\C\USER_h\mmgj.c</FilePath>
-            </File>
-            <File>
               <FileName>tim.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\C\USER_h\tim.c</FilePath>
@@ -593,6 +588,11 @@
               <FileName>ultrasound.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\C\USER_h\ultrasound.c</FilePath>
+            </File>
+            <File>
+              <FileName>i2c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\C\USER_h\i2c.c</FilePath>
             </File>
           </Files>
         </Group>
