@@ -15,7 +15,9 @@
 #define	SDA		GPIO_Pin_9
 #define	I2C_PORT	GPIOB
 /********************************************/
-float ax, ay, az, gx, gy, gz, temperature;
+static float ax, ay, az, gx, gy, gz, temperature;
+/********************************************/
+static float yaw, pitch, roll;
 /********************************************/
 
 void I2C_SET(void) {
@@ -126,15 +128,24 @@ void MPU6050_update(void) {
 /********************************************/
 
 void loop(void) {
-	MPU6050_update();
-	delay_ms(100);
-	OLED_ShowNumNoLen(6, 12 + 10 * 0, ax * 1000, 12, 1);
-	OLED_ShowNumNoLen(6, 12 + 10 * 1, ay * 1000, 12, 1);
-	OLED_ShowNumNoLen(6, 12 + 10 * 2, az * 1000, 12, 1);
-	OLED_ShowNumNoLen(6, 12 + 10 * 3, temperature, 12, 1);
+	yaw += gz * 0.05;
+	pitch += gy * 0.05;
+	roll += gx * 0.05;
+
+	OLED_ShowNumNoLen(6, 12 + 10 * 0, yaw, 12, 1);
+	OLED_ShowNumNoLen(6, 12 + 10 * 1, pitch, 12, 1);
+	OLED_ShowNumNoLen(6, 12 + 10 * 2, roll, 12, 1);
 	OLED_Refresh();
 	OLED_ClearRF();
+
+	MPU6050_update();
 	delay_ms(100);
+
+	if (KEY_Scan(1)) {
+		yaw = 0;
+		pitch = 0;
+		roll = 0;
+	}
 }
 
 int main(void) {
