@@ -24,6 +24,8 @@ static float yaw, pitch, roll;
 float cy, sy, cp, sp, cr, sr;
 int8_t test_x, test_y;
 /********************************************/
+static float pitch_a, roll_a, pitch_g, roll_g;
+/********************************************/
 
 void I2C_SET(void) {
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
@@ -191,9 +193,23 @@ void loop(void) {
 	//roll += gx * 0.002;
 
 	//嵌于车
-	yaw -= gz * 0.002;
-	pitch -= gy * 0.002;
-	roll -= gx * 0.002;
+	//yaw -= gz * 0.002;
+	//pitch -= gy * 0.002;
+	//roll -= gx * 0.002;
+
+	//重力解算
+	//yaw += gz * 0.002;
+	//pitch = atan2(ay, az);
+	//roll = atan2(ax, az);
+
+	//互补滤波
+	yaw += gz * 0.002;
+	pitch_a = atan2(ay, az);
+	roll_a = atan2(ax, az);
+	pitch_g += gy * 0.002;
+	roll_g += gx * 0.002;
+	pitch = 0.33 * pitch_g + 0.67 * pitch_a;
+	roll = 0.33 * roll_g + 0.67 * roll_a;
 
 	ypr();
 	euler(0, 0, 1);
@@ -212,6 +228,11 @@ void loop(void) {
 		yaw = 0;
 		pitch = 0;
 		roll = 0;
+
+		pitch_a = 0;
+		roll_a = 0;
+		pitch_g = 0;
+		roll_g = 0;
 	}
 }
 
