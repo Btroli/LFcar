@@ -6,6 +6,7 @@
 //#include "mmgj.h"
 #include "oled.h"
 #include "delay.h"
+#include "Serial.h"
 #include "encoder.h"
 #include "ultrasound.h"
 #include "LightSensor.h"
@@ -185,6 +186,11 @@ void line_o(int8_t x, int8_t y) {
 	cle(x, y);
 }
 
+void SendToVofa(float value1, float value2, float value3) {
+	Serial_Printf("%.4f,%.4f,%.4f\n", value1, value2, value3);
+}
+
+
 void loop(void) {
 
 	//拿于手
@@ -198,18 +204,23 @@ void loop(void) {
 	//roll -= gx * 0.002;
 
 	//重力解算
-	//yaw += gz * 0.002;
-	//pitch = atan2(ay, az);
-	//roll = atan2(ax, az);
+	yaw += gz * 0.002;
+	pitch = atan2(ay, az);
+	roll = atan2(ax, az);
 
 	//互补滤波
-	yaw += gz * 0.002;
-	pitch_a = atan2(ay, az);
-	roll_a = atan2(ax, az);
-	pitch_g += gy * 0.002;
-	roll_g += gx * 0.002;
-	pitch = 0.33 * pitch_g + 0.67 * pitch_a;
-	roll = 0.33 * roll_g + 0.67 * roll_a;
+	//yaw += gz * 0.002;
+	//pitch_a = atan2(ay, az);
+	//roll_a = atan2(ax, az);
+	//pitch_g += gy * 0.002;
+	//roll_g += gx * 0.002;
+	//pitch = 0.33 * pitch_g + 0.67 * pitch_a;
+	//roll = 0.33 * roll_g + 0.67 * roll_a;
+
+	//yaw += 0.0427;	//delay = 100ms
+	//yaw += 0.00427;	//delay = 10ms 较准确
+	yaw += 0.004279;
+	SendToVofa(yaw, pitch, roll);
 
 	ypr();
 	euler(0, 0, 1);
@@ -222,7 +233,7 @@ void loop(void) {
 	OLED_Refresh();
 	OLED_ClearRF();
 	MPU6050_update();
-	delay_ms(100);
+	delay_ms(10);
 
 	if (KEY_Scan(1)) {
 		yaw = 0;
@@ -258,6 +269,7 @@ int main(void) {
 
 
 	MPU6050_SET();
+	Serial_Init();
 	while (1)
 		loop();
 }

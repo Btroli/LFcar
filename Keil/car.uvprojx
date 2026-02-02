@@ -594,6 +594,11 @@
               <FileType>1</FileType>
               <FilePath>..\C\USER_h\i2c.c</FilePath>
             </File>
+            <File>
+              <FileName>Serial.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\C\USER_h\Serial.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
