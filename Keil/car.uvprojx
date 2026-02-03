@@ -580,11 +580,6 @@
               <FilePath>..\C\USER_h\key.c</FilePath>
             </File>
             <File>
-              <FileName>tim.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\C\USER_h\tim.c</FilePath>
-            </File>
-            <File>
               <FileName>ultrasound.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\C\USER_h\ultrasound.c</FilePath>

@@ -7,7 +7,7 @@
 #define	SDA		GPIO_Pin_9
 #define	I2C_PORT	GPIOB
 
-#define delay_T		0.002
+#define delay_T		0.01
 
 extern float yaw, pitch, roll, temperature;
 

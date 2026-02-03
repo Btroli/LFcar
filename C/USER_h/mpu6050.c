@@ -125,23 +125,11 @@ void Euler_yaw_cal(void) {
 }
 
 void Euler_cal(void) {
-	//拿于手
-	//yaw += gz * delay_T;
-	//pitch += gy * delay_T;
-	//roll += gx * delay_T;
+	yaw -= gz * delay_T;	//注意：只有yaw为角度，下二角为弧度。
+	pitch = -atan2(ay, az);
+	roll = -atan2(ax, az);
 
-	//嵌于车
-	//yaw -= gz * delay_T;
-	//pitch -= gy * delay_T;
-	//roll -= gx * delay_T;
-
-	//重力解算
-	yaw += gz * delay_T;
-	pitch = atan2(ay, az);
-	roll = atan2(ax, az);
-
-	//偏移矫正
-	yaw += 0.004273;
+	yaw -= 0.02338;
 
 	/*
 

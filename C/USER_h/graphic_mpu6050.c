@@ -7,7 +7,7 @@ static float cy, sy, cp, sp, cr, sr;
 static int8_t test_x, test_y;
 
 void ypr(void) {
-	cy = cosf(yaw),   sy = sinf(yaw);
+	cy = cosf(0.01745 * yaw),   sy = sinf(0.01745 * yaw);
 	cp = cosf(pitch), sp = sinf(pitch);
 	cr = cosf(roll),  sr = sinf(roll);
 }
