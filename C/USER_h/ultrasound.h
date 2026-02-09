@@ -1,7 +1,7 @@
 #ifndef _ULTRASOUND_H
 #define _ULTRASOUND_H
 
-#include "stm32f10x_gpio.h"
+#include "AllHeader.h"
 
 #define TRIG GPIO_Pin_2
 #define ECHO GPIO_Pin_3

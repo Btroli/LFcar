@@ -1,7 +1,7 @@
 #ifndef __LIGHTSENSOR_H
 #define	__LIGHTSENSOR_H
 
-#include "stm32f10x.h"
+#include "AllHeader.h"
 
 #define G_OUT0    GPIO_Pin_8
 #define G_OUT1    GPIO_Pin_9

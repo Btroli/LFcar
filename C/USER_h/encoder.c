@@ -1,5 +1,4 @@
 #include "encoder.h"
-#include "stm32f10x_gpio.h"
 
 void Encoder_Init_Tim2(void);
 void Encoder_Init_Tim3(void);

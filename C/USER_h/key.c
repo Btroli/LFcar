@@ -42,3 +42,4 @@ uint8_t	KEY_ScanNF(uint8_t pin) {
 	}
 	return KEY_OFF;
 }
+

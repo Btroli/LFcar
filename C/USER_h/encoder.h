@@ -1,7 +1,7 @@
 #ifndef _ENCODER_H
 #define _ENCODER_H
 
-#include "stm32f10x.h"
+#include "AllHeader.h"
 
 //初始化函数，需在main开头来一次。
 void Encoder_PA_SET(void);

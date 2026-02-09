@@ -1,5 +1,4 @@
 #include "button.h"
-#include "delay.h"
 
 //extern uint8_t n, m, f1, f2;
 
@@ -88,3 +87,4 @@ void Button_SET(void) {
 //		delay_ms(20);
 //	}
 //}
+

@@ -1,7 +1,7 @@
 #ifndef __BUTTON_H
 #define __BUTTON_H
 
-#include "stm32f10x.h"
+#include "AllHeader.h"
 
 #define BUTTON1    GPIO_Pin_0
 #define BUTTON2    GPIO_Pin_1

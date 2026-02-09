@@ -1,7 +1,5 @@
 #include "oled.h"
-#include "stdlib.h"
 #include "oledfont.h"
-#include "delay.h"
 
 u8 OLED_GRAM[144][8];
 
@@ -221,8 +219,8 @@ void OLED_DrawPoint(u8 x, u8 y, u8 t) {
 void OLED_DrawLine(u8 x0, u8 y0, u8 x1, u8 y1, u8 mode) {
 	int dx, dy, sx, sy, err, e2;
 
-	dx = abs(x1 - x0);
-	dy = abs(y1 - y0);
+	dx = (x1 > x0) ? (x1 - x0) : (x1 + x0);
+	dy = (y1 > y0) ? (y1 - y0) : (y1 + y0);
 	sx = (x0 < x1) ? 1 : -1;
 	sy = (y0 < y1) ? 1 : -1;
 	err = dx - dy;
@@ -545,35 +543,45 @@ u32 OLED_Pow(u8 m, u8 n) {
 //len :数字的位数
 //size:字体大小
 //mode:0,反色显示;1,正常显示
-void OLED_ShowNum(u8 x, u8 y, u32 num, u8 len, u8 size1, u8 mode) {
-	u8 t, temp, m = 0;
-	if (size1 == 8)
+void OLED_ShowNum(u8 x, u8 y, int32_t num, u8 len, u8 size, u8 mode) {
+	u8 t, number, m = 0;
+	if (size == 8)
 		m = 2;
+	if (num < 0) {
+		num = -num;
+		OLED_ShowChar(x, y, '-', size, mode);
+		x += (size / 2 + m);
+	}
 	for (t = 0; t < len; t++) {
-		temp = (num / OLED_Pow(10, len - t - 1)) % 10;
-		if (temp == 0) {
-			OLED_ShowChar(x + (size1 / 2 + m)*t, y, '0', size1, mode);
-		} else {
-			OLED_ShowChar(x + (size1 / 2 + m)*t, y, temp + '0', size1, mode);
-		}
+		number = (num / OLED_Pow(10, len - t - 1)) % 10;
+		if (number)
+			OLED_ShowChar(x + (size / 2 + m) * t, y, number + '0', size, mode);
+		else
+			OLED_ShowChar(x + (size / 2 + m) * t, y, '0', size, mode);
 	}
 }
-void OLED_ShowNumNoLen(u8 x, u8 y, u32 num, u8 size1, u8 mode) {
-	u8 t, temp, len = 1, m = 0;
+
+void OLED_ShowNumNoLen(u8 x, u8 y, int32_t num, u8 size, u8 mode) {
+	u8 t, number, len = 1, m = 0;
 	u32 nnum = num;
+	if (size == 8)
+		m = 2;
+	if (num < 0) {
+		num = -num;
+		nnum = num;
+		OLED_ShowChar(x, y, '-', size, mode);
+		x += (size / 2 + m);
+	}
 	while (nnum / 10) {
 		nnum /= 10;
 		len++;
 	}
-	if (size1 == 8)
-		m = 2;
 	for (t = 0; t < len; t++) {
-		temp = (num / OLED_Pow(10, len - t - 1)) % 10;
-		if (temp == 0) {
-			OLED_ShowChar(x + (size1 / 2 + m)*t, y, '0', size1, mode);
-		} else {
-			OLED_ShowChar(x + (size1 / 2 + m)*t, y, temp + '0', size1, mode);
-		}
+		number = (num / OLED_Pow(10, len - t - 1)) % 10;
+		if (number)
+			OLED_ShowChar(x + (size / 2 + m) * t, y, number + '0', size, mode);
+		else
+			OLED_ShowChar(x + (size / 2 + m) * t, y, '0', size, mode);
 	}
 }
 
@@ -732,3 +740,4 @@ void OLED_SET(void) {
 
 	OLED_WR_Byte(0xAF, OLED_CMD); /*display ON*/
 }
+

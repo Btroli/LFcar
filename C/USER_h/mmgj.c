@@ -1,9 +1,39 @@
 #include "mmgj.h"
 
+uint8_t count = 1, area = 0, option = 0, option_NUM = 10, sel_flag = 1, car_screen_flag = 0, value_num = 0;
+
+uint8_t value[10][value_len] = {
+	{0, 3, 8, 0, 0, 0, 0, 0, 0, 3},	//0
+	{0, 0, 0, 0, 6, 0, 0, 0, 0, 3},	//1
+	{0, 6, 6, 0, 0, 0, 0, 0, 0, 3},	//2
+	{3, 0, 0, 0, 0, 0, 0, 0, 0, 2},	//3
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 3},	//4
+	{0, 1, 0, 0, 0, 0, 0, 0, 0, 2},	//5
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//6
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//7
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//8
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//9
+};
+
+uint8_t name[10][10] = {
+	"LKp",	//0
+	"LKi",	//1
+	"LKd",	//2
+	"GAB",	//3
+	"quan",	//4
+	"BiZhang",	//5
+	"name6",	//6
+	"name7",	//7
+	"name8",	//8
+	"distance",	//9
+};
+
 //pid0
 int16_t SPDA = 0, SPDB = 0;
 uint8_t Kp_A = 50, Ki_A = 30, Kd_A = 7, Kp_B = 50, Ki_B = 30, Kd_B = 7;
 int16_t PA = 0, PB = 0, pre_PA = 0, pre_PB = 0, sum_PA = 0, sum_PB = 0;
+
+/********************************************/
 
 void cal_valueP(uint8_t *p, float *v) {
 	static const float pow10[10] = {
@@ -14,6 +44,7 @@ void cal_valueP(uint8_t *p, float *v) {
 		*v = *v * 10 + *(p++);
 	*v *= pow10[*p];
 }
+
 float cal_value(uint8_t *p) {
 	static const float pow10[10] = {
 		1e-9f, 1e-8f, 1e-7f, 1e-6f, 1e-5f, 1e-4f, 1e-3f, 1e-2f, 1e-1f, 1e0f
@@ -24,6 +55,9 @@ float cal_value(uint8_t *p) {
 	v *= pow10[*p];
 	return v;
 }
+
+/********************************************/
+
 void FuXuan(uint8_t n) {
 	if (n < 3) {
 		OLED_DrawBoxXuLine(0, 8 + 18 * n, 127, 26 + 18 * n, 3, 1);
@@ -82,6 +116,7 @@ void loop_screen1(void) {
 	}
 	delay_ms(100);
 }
+
 void loop_screen0(void) {
 	if (KEY_Scan(3)) {
 		sel_flag = 0;
@@ -127,6 +162,8 @@ void loop_screen0(void) {
 	OLED_ClearRF();
 }
 
+/********************************************/
+
 void pid0(void) {
 	if (KEY_Scan(4)) {
 		car_screen_flag = 1;
@@ -170,15 +207,14 @@ void pid0(void) {
 		SPDB = 7000;
 
 }
+
 void pidInit(void) {
 	HIGH(STBY);
 
 	//loop_car_delaytime = value[8][0] * 100 + value[8][1] * 10 + value[8][2];
 
-	//if (!loop_car_delaytime)	//delay_ms(0)会爆炸
-	//	loop_car_delaytime++;
-
 	SPDA = 0, SPDB = 0;
 	PA = 0, PB = 0, pre_PA = 0, pre_PB = 0;
 	sum_PA = 0, sum_PB = 0;
 }
+

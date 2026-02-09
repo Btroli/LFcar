@@ -1,26 +1,4 @@
-#include "stm32f10x.h"
-#include "key.h"
-#include "pwm.h"
-#include "tim.h"
-#include "mmgj.h"
-#include "oled.h"
-#include "delay.h"
-//#include "button.h"
-#include "encoder.h"
-#include "ultrasound.h"
-#include "LightSensor.h"
-
-/********************************************/
-
-#define LEFT	0b11100000
-#define MID 	0b00011000
-#define RIGHT	0b00000111
-
-#define value_len 10
-
-uint8_t count = 1, area = 0, option = 0, option_NUM = 10, sel_flag = 1, car_screen_flag = 0, value_num = 0;
-
-uint8_t loop_car_delaytime = 10;
+#include "AllHeader.h"
 
 //距离
 uint32_t distance = 0, distance_now = 0, distance_pj = 0;
@@ -52,51 +30,13 @@ uint16_t pre_time[10] = {0xFFFF};
 //通用临时变量i
 uint8_t i = 0;
 
-
-uint8_t value[10][value_len] = {
-	{0, 3, 8, 0, 0, 0, 0, 0, 0, 3},	//0
-	{0, 0, 0, 0, 6, 0, 0, 0, 0, 3},	//1
-	{0, 6, 6, 0, 0, 0, 0, 0, 0, 3},	//2
-	{3, 0, 0, 0, 0, 0, 0, 0, 0, 2},	//3
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 3},	//4
-	{0, 1, 0, 0, 0, 0, 0, 0, 0, 2},	//5
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//6
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//7
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//8
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//9
-};
-
-uint8_t name[10][10] = {
-	"LKp",	//0
-	"LKi",	//1
-	"LKd",	//2
-	"GAB",	//3
-	"quan",	//4
-	"BiZhang",	//5
-	"name6",	//6
-	"name7",	//7
-	"name8",	//8
-	"distance",	//9
-};
-
 /********************************************/
 
-//void loop_screen0(void);
-//void loop_screen1(void);
 void loop_car(void);
 void loop_car_quan(void);
-
 void loop_car_bz(void);
 
-void pidInit(void);
-
-void pidInit_1(void);
-
-void pid0(void);
 void pid1(void);
-
-void Quan0(void);
-void Quan1(void);
 
 /********************************************/
 
@@ -141,21 +81,10 @@ int main(void) {
 }
 
 /********************************************/
-//uint8_t csbtime(void) {
-//	for (i = 0; i < 3+1; i++)
-//		if (pre_time[i] > 1800)
-//			return 0;
-//	return 1;
-//}
 void loop_car_bz(void) {
 
 	ReadNow = ReadAll();
 
-	//for (i = 3; i > 0; i--)
-	//	pre_time[i] = pre_time[i - 1];
-	//pre_time[0] = echotime;
-
-	//if (csbtime()) {
 	if (echotime < 1400) {
 		sum_PA = 0;
 		sum_PB = 0;
@@ -348,3 +277,4 @@ void pidInit_1(void) {
 	sum_Er = 0;
 
 }
+

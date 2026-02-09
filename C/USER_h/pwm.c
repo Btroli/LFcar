@@ -94,3 +94,4 @@ void Set_PWMB(int PWM) {
 		TIM_SetCompare2(TIM4, PWM);
 	}
 }
+
