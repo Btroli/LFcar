@@ -594,6 +594,11 @@
               <FileType>1</FileType>
               <FilePath>..\C\USER_h\ultrasound.c</FilePath>
             </File>
+            <File>
+              <FileName>loopmode.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\C\USER_h\loopmode.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

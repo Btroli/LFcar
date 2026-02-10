@@ -598,10 +598,10 @@ void OLED_ShowChinese(u8 x, u8 y, u8 num, u8 size1, u8 mode) {
 			temp = Hzk1[num][i];   //调用16*16字体
 		} else if (size1 == 24) {
 			temp = Hzk2[num][i];   //调用24*24字体
-		} else if (size1 == 32) {
-			temp = Hzk3[num][i];   //调用32*32字体
-		} else if (size1 == 64) {
-			temp = Hzk4[num][i];   //调用64*64字体
+		//} else if (size1 == 32) {
+		//	temp = Hzk3[num][i];   //调用32*32字体
+		//} else if (size1 == 64) {
+		//	temp = Hzk4[num][i];   //调用64*64字体
 		} else
 			return;
 		for (m = 0; m < 8; m++) {

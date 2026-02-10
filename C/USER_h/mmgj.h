@@ -13,7 +13,11 @@ extern uint8_t Kp_A, Ki_A, Kd_A, Kp_B, Ki_B, Kd_B;
 extern int16_t PA, PB, pre_PA, pre_PB, sum_PA, sum_PB;
 extern volatile int16_t EvalueA, EvalueB;
 extern int16_t GA,GB;
+extern volatile uint32_t Stime;
 
+extern CarState LoopMode;
+
+void InitAll(void);
 
 void cal_valueP(uint8_t *p, float *v);
 float cal_value(uint8_t *p);
@@ -25,7 +29,6 @@ void loop_screen1(void);
 void pid0(void);
 
 void pidInit(void);
-void pidInit_1(void);
 
 //下面的值，除以100就是 速度 cm/s
 //速度 距离 计算，查表更方便

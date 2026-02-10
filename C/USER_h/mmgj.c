@@ -28,10 +28,37 @@ uint8_t name[10][10] = {
 	"distance",	//9
 };
 
+//pid0 给定值
+int16_t GA = 40, GB = 40;
 //pid0
 int16_t SPDA = 0, SPDB = 0;
 uint8_t Kp_A = 50, Ki_A = 30, Kd_A = 7, Kp_B = 50, Ki_B = 30, Kd_B = 7;
 int16_t PA = 0, PB = 0, pre_PA = 0, pre_PB = 0, sum_PA = 0, sum_PB = 0;
+
+//TIM
+volatile uint32_t Stime;
+volatile int16_t EvalueA = 0, EvalueB = 0;
+
+/********************************************/
+
+void InitAll(void) {
+	SystemInit();
+	delay_init();
+	KEY_SET();
+	PWM_SET();
+	OLED_SET();
+//	Button_SET();
+	Encoder_PA_SET();
+	UltraSound_SET();
+	Guangmin_PG_SET();
+	TIM67_SET(&EvalueA, &EvalueB, &Stime);
+
+	LOW(STBY);
+	TRIG_LOW;
+
+	OLED_Refresh();
+	delay_ms(1000);
+}
 
 /********************************************/
 
@@ -98,37 +125,36 @@ void loop_screen1(void) {
 	OLED_Refresh();
 	OLED_ClearRF();
 	if (KEY_Scan(3)) {
-		car_screen_flag = 0;
-		sel_flag = 1;
+		LoopMode = Loop_CHOICE;
+
 		value_num = 0;
 		OLED_ClearRF();
 
 		pidInit();
-		pidInit_1();
 
 		return;
 	}
 	if (KEY_Scan(4)) {
-		sel_flag = 1;
+		LoopMode = Loop_SCREEN0;
 		value_num = 0;
 		OLED_ClearRF();
 		return;
 	}
-	delay_ms(100);
+	count = 1 - count;
+	delay_ms(200);
 }
 
 void loop_screen0(void) {
 	if (KEY_Scan(3)) {
-		sel_flag = 0;
+		LoopMode = Loop_SCREEN1;
 		OLED_ClearRF();
 		return;
 	}
 	if (KEY_Scan(4)) {
-		car_screen_flag = 0;
+		LoopMode = Loop_CHOICE;
 		OLED_ClearRF();
 
 		pidInit();
-		pidInit_1();
 
 		return;
 	}
@@ -160,18 +186,13 @@ void loop_screen0(void) {
 
 	OLED_Refresh();
 	OLED_ClearRF();
+	count = 1 - count;
+	delay_ms(200);
 }
 
 /********************************************/
 
-void pid0(void) {
-	if (KEY_Scan(4)) {
-		car_screen_flag = 1;
-		return;
-	}
-
-	Set_PWMA(SPDA);
-	Set_PWMB(SPDB);
+void pid0_show(void) {
 	OLED_ShowString(6, 12, "SPDA", 12, 1);
 	OLED_ShowString(70, 12, "SPDB", 12, 1);
 	OLED_ShowNum(6, 12 + 10, SPDA, 4, 12, 1);
@@ -186,9 +207,22 @@ void pid0(void) {
 	OLED_ShowString(36, 12 + 20, "GB", 12, 1);
 	OLED_ShowNum(36, 12 + 30, GB, 2, 12, 1);
 
-
 	OLED_Refresh();
 	OLED_ClearRF();
+}
+
+void pid0(void) {
+	if (KEY_Scan(4)) {
+		LoopMode = Loop_SCREEN1;
+		Set_PWMA(0);
+		Set_PWMB(0);
+		return;
+	}
+
+	Set_PWMA(SPDA);
+	Set_PWMB(SPDB);
+
+	pid0_show();
 
 	pre_PA = PA;
 	pre_PB = PB;
@@ -207,14 +241,3 @@ void pid0(void) {
 		SPDB = 7000;
 
 }
-
-void pidInit(void) {
-	HIGH(STBY);
-
-	//loop_car_delaytime = value[8][0] * 100 + value[8][1] * 10 + value[8][2];
-
-	SPDA = 0, SPDB = 0;
-	PA = 0, PB = 0, pre_PA = 0, pre_PB = 0;
-	sum_PA = 0, sum_PB = 0;
-}
-

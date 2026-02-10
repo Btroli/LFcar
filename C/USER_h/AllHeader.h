@@ -15,6 +15,8 @@
 #define u16 uint16_t 
 #define u32 uint32_t 
 
+#include "global.h"
+
 #include "stm32f10x.h"
 #include "key.h"
 #include "pwm.h"
@@ -24,6 +26,7 @@
 #include "delay.h"
 //#include "button.h"
 #include "encoder.h"
+#include "loopmode.h"
 #include "ultrasound.h"
 #include "LightSensor.h"
 
