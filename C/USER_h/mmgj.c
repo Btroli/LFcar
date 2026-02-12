@@ -1,14 +1,14 @@
 #include "mmgj.h"
 
-uint8_t count = 1, area = 0, option = 0, option_NUM = 10, sel_flag = 1, car_screen_flag = 0, value_num = 0;
+uint8_t count = 1, area = 0, option = 0, option_NUM = 10, value_num = 0;
 
 uint8_t value[10][value_len] = {
-	{0, 3, 8, 0, 0, 0, 0, 0, 0, 3},	//0
-	{0, 0, 0, 0, 6, 0, 0, 0, 0, 3},	//1
-	{0, 6, 6, 0, 0, 0, 0, 0, 0, 3},	//2
-	{3, 0, 0, 0, 0, 0, 0, 0, 0, 2},	//3
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 3},	//4
-	{0, 1, 0, 0, 0, 0, 0, 0, 0, 2},	//5
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},	//0
+	{0, 3, 8, 0, 0, 0, 0, 0, 0, 3},	//1
+	{0, 0, 0, 0, 6, 0, 0, 0, 0, 3},	//2
+	{0, 6, 6, 0, 0, 0, 0, 0, 0, 3},	//3
+	{3, 0, 0, 0, 0, 0, 0, 0, 0, 2},	//4
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//5
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//6
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//7
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 5},	//8
@@ -16,16 +16,16 @@ uint8_t value[10][value_len] = {
 };
 
 uint8_t name[10][10] = {
-	"LKp",	//0
-	"LKi",	//1
-	"LKd",	//2
-	"GAB",	//3
-	"quan",	//4
-	"BiZhang",	//5
+	"MODE",	//0
+	"LKp",	//1
+	"LKi",	//2
+	"LKd",	//3
+	"GAB",	//4
+	"name5",	//5
 	"name6",	//6
 	"name7",	//7
 	"name8",	//8
-	"distance",	//9
+	"name9",	//9
 };
 
 //pid0 给定值
@@ -98,6 +98,37 @@ void FuXuan(uint8_t n) {
 	}
 }
 
+void loop_screen2(void) {
+#define modeNUM 3
+	uint8_t *mn = &value[MODE_raw][0];
+	static const uint8_t mode_name[modeNUM][5] = {
+		{2, 3, 10, 11, 0xFF},	//普通模式
+		{4, 5, 10, 11, 0xFF},	//方框模式
+		{0, 1, 10, 11, 0xFF},	//避障模式
+	};
+
+	if (KEY_Scan(1))
+		*mn = (*mn + 1) % modeNUM;	//不超过modeNUM，加1取余，下同理
+	if (KEY_Scan(2))
+		*mn = (*mn + modeNUM - 1) % modeNUM;
+#undef modeNUM
+	OLED_zhString(8, 24, 16, mode_name[*mn], 1);
+	OLED_Refresh();
+	OLED_ClearRF();
+	if (KEY_Scan(3)) {
+		LoopMode = Loop_CHOICE;
+		OLED_ClearRF();
+		pidInit();
+		return;
+	}
+	if (KEY_Scan(4)) {
+		LoopMode = Loop_SCREEN0;
+		OLED_ClearRF();
+		return;
+	}
+	delay_ms(200);
+}
+
 void loop_screen1(void) {
 	if (KEY_Scan(1)) {
 		value_num++;
@@ -148,6 +179,8 @@ void loop_screen0(void) {
 	if (KEY_Scan(3)) {
 		LoopMode = Loop_SCREEN1;
 		OLED_ClearRF();
+		if (option == MODE_raw)
+			LoopMode = Loop_SCREEN2;
 		return;
 	}
 	if (KEY_Scan(4)) {
@@ -213,7 +246,7 @@ void pid0_show(void) {
 
 void pid0(void) {
 	if (KEY_Scan(4)) {
-		LoopMode = Loop_SCREEN1;
+		LoopMode = Loop_SCREEN0;
 		Set_PWMA(0);
 		Set_PWMB(0);
 		return;

@@ -589,7 +589,7 @@ void OLED_ShowNumNoLen(u8 x, u8 y, int32_t num, u8 size, u8 mode) {
 //x,y:起点坐标
 //num:汉字对应的序号
 //mode:0,反色显示;1,正常显示
-void OLED_ShowChinese(u8 x, u8 y, u8 num, u8 size1, u8 mode) {
+void OLED_zh(u8 x, u8 y, u8 num, u8 size1, u8 mode) {
 	u8 m, temp;
 	u8 x0 = x, y0 = y;
 	u16 i, size3 = (size1 / 8 + ((size1 % 8) ? 1 : 0)) * size1; //得到字体一个字符对应点阵集所占的字节数
@@ -598,10 +598,10 @@ void OLED_ShowChinese(u8 x, u8 y, u8 num, u8 size1, u8 mode) {
 			temp = Hzk1[num][i];   //调用16*16字体
 		} else if (size1 == 24) {
 			temp = Hzk2[num][i];   //调用24*24字体
-		//} else if (size1 == 32) {
-		//	temp = Hzk3[num][i];   //调用32*32字体
-		//} else if (size1 == 64) {
-		//	temp = Hzk4[num][i];   //调用64*64字体
+			//} else if (size1 == 32) {
+			//	temp = Hzk3[num][i];   //调用32*32字体
+			//} else if (size1 == 64) {
+			//	temp = Hzk4[num][i];   //调用64*64字体
 		} else
 			return;
 		for (m = 0; m < 8; m++) {
@@ -621,39 +621,49 @@ void OLED_ShowChinese(u8 x, u8 y, u8 num, u8 size1, u8 mode) {
 	}
 }
 
+//输入string（数组），如{0, 1, 2, 3, 0xFF}，显示字0123，截止符=0xFF
+void OLED_zhString(u8 x, u8 y, u8 size, const u8* string, u8 mode) {
+	for (;;) {
+		OLED_zh(x, y, *string++, size, mode);
+		if (*string == 0xFF)
+			return;
+		x += size;
+	}
+}
+
 //num 显示汉字的个数
 //space 每一遍显示的间隔
 //mode:0,反色显示;1,正常显示
-void OLED_ScrollDisplay(u8 num, u8 space, u8 mode) {
-	u8 i, n, t = 0, m = 0, r;
-	while (1) {
-		if (m == 0) {
-			OLED_ShowChinese(128, 24, t, 16, mode); //写入一个汉字保存在OLED_GRAM[][]数组中
-			t++;
-		}
-		if (t == num) {
-			for (r = 0; r < 16 * space; r++) { //显示间隔
-				for (i = 1; i < 144; i++) {
-					for (n = 0; n < 8; n++) {
-						OLED_GRAM[i - 1][n] = OLED_GRAM[i][n];
-					}
-				}
-				OLED_Refresh();
-			}
-			t = 0;
-		}
-		m++;
-		if (m == 16) {
-			m = 0;
-		}
-		for (i = 1; i < 144; i++) { //实现左移
-			for (n = 0; n < 8; n++) {
-				OLED_GRAM[i - 1][n] = OLED_GRAM[i][n];
-			}
-		}
-		OLED_Refresh();
-	}
-}
+//void OLED_ScrollDisplay(u8 num, u8 space, u8 mode) {
+//	u8 i, n, t = 0, m = 0, r;
+//	while (1) {
+//		if (m == 0) {
+//			OLED_ShowChinese(128, 24, t, 16, mode); //写入一个汉字保存在OLED_GRAM[][]数组中
+//			t++;
+//		}
+//		if (t == num) {
+//			for (r = 0; r < 16 * space; r++) { //显示间隔
+//				for (i = 1; i < 144; i++) {
+//					for (n = 0; n < 8; n++) {
+//						OLED_GRAM[i - 1][n] = OLED_GRAM[i][n];
+//					}
+//				}
+//				OLED_Refresh();
+//			}
+//			t = 0;
+//		}
+//		m++;
+//		if (m == 16) {
+//			m = 0;
+//		}
+//		for (i = 1; i < 144; i++) { //实现左移
+//			for (n = 0; n < 8; n++) {
+//				OLED_GRAM[i - 1][n] = OLED_GRAM[i][n];
+//			}
+//		}
+//		OLED_Refresh();
+//	}
+//}
 
 //x,y：起点坐标
 //sizex,sizey,图片长宽

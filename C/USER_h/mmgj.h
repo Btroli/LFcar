@@ -3,19 +3,18 @@
 
 #include "AllHeader.h"
 
+#define MODE_raw 0
+
 #define value_len 10
-extern uint8_t count, area, option, option_NUM, sel_flag, car_screen_flag, value_num;
+extern uint8_t count, area, option, option_NUM, value_num;
 extern uint8_t value[10][value_len], name[10][10];
 
 //pid0
 extern int16_t SPDA, SPDB;
-extern uint8_t Kp_A, Ki_A, Kd_A, Kp_B, Ki_B, Kd_B;
+//extern uint8_t Kp_A, Ki_A, Kd_A, Kp_B, Ki_B, Kd_B;
 extern int16_t PA, PB, pre_PA, pre_PB, sum_PA, sum_PB;
 extern volatile int16_t EvalueA, EvalueB;
 extern int16_t GA,GB;
-extern volatile uint32_t Stime;
-
-extern CarState LoopMode;
 
 void InitAll(void);
 
@@ -25,6 +24,8 @@ void FuXuan(uint8_t n);
 
 void loop_screen0(void);
 void loop_screen1(void);
+
+void loop_screen2(void);
 
 void pid0(void);
 

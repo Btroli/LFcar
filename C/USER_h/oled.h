@@ -59,9 +59,10 @@ void OLED_ShowChar(u8 x, u8 y, u8 chr, u8 size1, u8 mode);	//显示普通字符(
 void OLED_ShowString(u8 x, u8 y, u8 *chr, u8 size1, u8 mode);	//显示字符串
 void OLED_ShowNum(u8 x, u8 y, int32_t num, u8 len, u8 size, u8 mode);	//显示数字(x,y,num,位数,大小,反相=0)
 void OLED_ShowNumNoLen(u8 x, u8 y, int32_t num, u8 size, u8 mode);
-void OLED_ShowChinese(u8 x, u8 y, u8 num, u8 size1, u8 mode);	//中文
+void OLED_zh(u8 x, u8 y, u8 num, u8 size1, u8 mode);	//中文
+void OLED_zhString(u8 x, u8 y, u8 size, const u8* string, u8 mode);	//中文串
 
-void OLED_ScrollDisplay(u8 num, u8 space, u8 mode);	//滚动显示(中文数，间隔，反相)
+//void OLED_ScrollDisplay(u8 num, u8 space, u8 mode);	//滚动显示(中文数，间隔，反相)
 void OLED_ShowPicture(u8 x, u8 y, u8 sizex, u8 sizey, u8 BMP[], u8 mode);	//显示位图(x,y,x向大小,y向大小,图,反相)
 
 //*********************************************************************************************

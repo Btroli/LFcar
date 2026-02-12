@@ -4,10 +4,11 @@
 typedef enum {
 	Loop_SCREEN0 = 0, 	//0
 	Loop_SCREEN1,		//1
-	Loop_CHOICE,		//2
-	Loop_CAR,		//3
-	Loop_QUAN,		//4
-	Loop_BZ,		//5
+	Loop_SCREEN2,		//2
+	Loop_CHOICE,		//3
+	Loop_CAR,		//4
+	Loop_QUAN,		//5
+	Loop_BZ,		//6
 } CarState;
 
 typedef void (*LoopFunc)(void);

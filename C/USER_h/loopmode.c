@@ -5,6 +5,7 @@ CarState LoopMode = Loop_SCREEN0;
 LoopFunc loop_functions[] = {
 	loop_screen0,
 	loop_screen1,
+	loop_screen2,
 	Select_loop,
 	loop_car,
 	loop_car_quan,
@@ -19,7 +20,6 @@ volatile uint32_t Stime_bian = 0xFFFFFFFF + 1 - 200;	//2^32 - 200
 
 //bizhang
 uint8_t csb_flag = 0;
-uint16_t pre_time[10] = {0xFFFF};
 
 //pid1
 uint8_t ReadNow, LastRead;
@@ -34,12 +34,8 @@ uint8_t i = 0;
 
 
 void Select_loop(void) {
-	if (quan)
-		LoopMode = Loop_QUAN;
-	else if (csb_flag)
-		LoopMode = Loop_BZ;
-	else
-		LoopMode = Loop_CAR;
+
+	LoopMode = (CarState)(Loop_CAR + value[MODE_raw][0]);
 
 	Set_PWMA(0);
 	Set_PWMB(0);
@@ -126,11 +122,11 @@ void loop_car(void) {
 		sum_PB = 0;
 
 		if (LastRead & LEFT) {
-			GA = 0;
+			GA = -20;
 			GB = 60;
 		} else if (LastRead & RIGHT) {
 			GA = 60;
-			GB = 0;
+			GB = -20;
 		}
 	}
 
@@ -158,7 +154,7 @@ void loop_car_quan(void) {
 		sum_PA = 0;
 		sum_PB = 0;
 
-		if (bian_flag && Stime - Stime_bian >= 200) {
+		if (bian_flag && Stime - Stime_bian >= 50) {	//此处防止转弯不稳定
 			bian++;
 			Stime_bian = Stime;
 		}
@@ -190,7 +186,7 @@ void loop_car_quan(void) {
 			LOW(STBY);
 			while (1)
 				if (KEY_Scan(4)) {
-					car_screen_flag = 1;
+					LoopMode = Loop_SCREEN0;
 					bian = 0;
 					bian_pre = 0;
 					bian_flag = 1;
@@ -233,12 +229,10 @@ void pidInit(void) {
 	PA = 0, PB = 0, pre_PA = 0, pre_PB = 0;
 	sum_PA = 0, sum_PB = 0;
 
-	LKp = value[0][0] * 100 + value[0][1] * 10 + value[0][2];
-	LKi = cal_value(value[1]);
-	LKd = value[2][0] * 100 + value[2][1] * 10 + value[2][2];
-	GAB = value[3][0] * 10 + value[3][1];
-	quan = value[4][0] * 100 + value[4][1] * 10 + value[4][2];
-	csb_flag = value[5][0] * 10 + value[5][1];
+	LKp = value[1][0] * 100 + value[1][1] * 10 + value[1][2];
+	LKi = cal_value(value[2]);
+	LKd = value[3][0] * 100 + value[3][1] * 10 + value[3][2];
+	GAB = value[4][0] * 10 + value[4][1];
 
 	Er = 0;
 	pre_Er = 0;
